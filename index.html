@@ -335,19 +335,18 @@
           <div class="flex items-start space-x-2">
             <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
             <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none text-xs text-slate-800 leading-relaxed max-w-[85%] space-y-2">
-              <p>Ahoj Davide! Jsem tvůj <b>Chief of Staff & Osobní Kouč</b>. Mám napojení na tvůj Druhý mozek v reálném čase.</p>
-              <p class="text-[11px] text-slate-600">Sleduji tvé dnešní priority: <b>4 Baluo klientské reporty</b> (do 14:00), <b>prezentaci pro Děkana Hápa</b> (14:00–16:00) a <b>fitko s Pájou</b> (16:30).</p>
-              <p class="text-[11px] text-slate-600">Zeptej se mě na cokoliv, nadiktuj myšlenku nebo nech zhodnotit situaci!</p>
+              <p>Ahoj Davide! Jsem tvůj <b>Chief of Staff & Osobní Kouč</b>. Mám živé napojení na tvůj Druhý mozek v cloudu.</p>
+              <p class="text-[11px] text-slate-600">Sleduji tvůj rozvrh a priority v reálném čase. S čím potřebuješ pohnout nebo co mám připravit?</p>
             </div>
           </div>
         </div>
 
         <!-- Rychlé akce -->
         <div class="py-2 flex space-x-1.5 overflow-x-auto no-scrollbar">
-          <button onclick="sendQuickPrompt('Zhodnoť můj aktuální časový plán na odpoledne a řekni mi, do čeho se hned pustit.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">⏱️ Co teď hned?</button>
-          <button onclick="sendQuickPrompt('Shrň klíčové argumenty a projekt FAČR pro čtvrteční schůzku s Děkanem Hápem.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">👑 Děkan Háp & FAČR</button>
-          <button onclick="sendQuickPrompt('Jak vyřešit strategii se Zbyňkem a offboarding Jirky Burdy do čtvrtka?')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">🤝 Zbyňa & StartItUp</button>
-          <button onclick="sendQuickPrompt('Potřebuji zkontrolovat registraci ClinicalTrials a kurz analytika.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">🔬 Ph.D. úkoly</button>
+          <button onclick="sendQuickPrompt('Zhodnoť můj aktuální časový plán na zbytek dne a řekni mi, do čeho se hned pustit.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">⏱️ Co teď hned?</button>
+          <button onclick="sendQuickPrompt('Zkontroluj stav mých dnešních priorit a navrhni nejlepší strategii.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">🎯 Analýza priorit</button>
+          <button onclick="sendQuickPrompt('Pomoz mi připravit agendu a strategické argumenty pro další schůzku.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">👑 Příprava schůzky</button>
+          <button onclick="sendQuickPrompt('Roztřiď a vyhodnoť nové poznámky v mém inboxu.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">📥 Třídění inboxu</button>
         </div>
 
         <!-- Chat Input s hlasovým diktováním -->
@@ -1437,9 +1436,7 @@ Tvým úkolem je hlídat jeho čas, priority, bránit rozptylování a pomáhat 
 
 O DAVIDOVI:
 - David Prycl: BDM v Aplikačním centru Baluo (FTK UP), Transfer Scout (FTK UP), Ph.D. student kinantropologie, spoluzakladatel StartItUp (B2B SaaS / AI nástroje), zakladatel Svišti v pohybu.
-- Rodina: Partnerka Janča, dcerky Nelinka a Andrejka.
-- Styl: Extrémní tah na branku, vizionář, spousta rozpracovaných věcí. Nesnáší korporátní balast a prázdné řeči. Potřebuje jasné priority, vnější tlak, přímočaré zhodnocení a konkrétní kroky ("Být lepší!").
-- Klíčoví lidé: doc. Martin Sigmund (ředitel Baluo, Davidův nadřízený - pozor na dlouhé hovory, držet 5min limit), Zbyněk (StartItUp společník, řeší obchod), Děkan Jan Háp (prezentace AC FTK a smluvního výzkumu FAČR).
+- Styl: Extrémní tah na branku, vizionář, spousta rozpracovaných věcí současně. Nesnáší korporátní balast a prázdné řeči. Potřebuje jasné priority, vnější tlak, přímočaré zhodnocení a konkrétní kroky ("Být lepší!").
 
 AKTUÁLNÍ STAV DRUHÉHO MOZKU A DNEŠNÍ ROZVRH (SSOT):
 ${currentRawMarkdown || "Prioritní soubor načten z GitHubu/lokálního disku."}
