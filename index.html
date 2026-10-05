@@ -281,43 +281,43 @@
         </div>
       </div>
 
-      <!-- TAB 3: AI CHIEF OF STAFF (GEMINI 3.8 FLASH HIGH) -->
-      <div id="tabContentAI" class="hidden flex flex-col h-[520px]">
+      <!-- TAB 3: AI CHIEF OF STAFF (GEMINI 2.5 / 2.0 FLASH LIVE) -->
+      <div id="tabContentAI" class="hidden flex flex-col h-[calc(100vh-140px)] min-h-[460px] max-h-[720px]">
         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <div>
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">AI Kouč & Chief of Staff</h2>
-            <p class="text-[11px] text-slate-500">Poháněno Gemini 3.8 Flash High</p>
+            <p class="text-[11px] text-slate-500" id="aiModelIndicator">Poháněno Gemini Flash • Live</p>
           </div>
-          <span class="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">Aktivní</span>
+          <span id="aiStatusBadge" class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Aktivní</span>
         </div>
 
         <!-- Chat zprávy -->
         <div id="aiChatBox" class="flex-1 overflow-y-auto no-scrollbar py-3 space-y-3">
           <div class="flex items-start space-x-2">
             <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none text-xs text-slate-800 leading-relaxed max-w-[85%]">
-              Ahoj Davide! Jsem tvůj Chief of Staff. Sleduji tvé dnešní priority:
-              <br><br>
-              1. 🔴 <b>Baluo data</b> (4 klienti z minula – čistý dopolední blok až do 11:30)<br>
-              2. 🔵 <b>Call se Zbyňou</b> (StartItUp pivot na 100% AI)<br>
-              3. 🏋️ <b>Fitness s Pájou Mrnuštíkem</b> (16:30)<br>
-              <br>
-              S čím potřebuješ pohnout nebo co mám připravit?
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none text-xs text-slate-800 leading-relaxed max-w-[85%] space-y-2">
+              <p>Ahoj Davide! Jsem tvůj <b>Chief of Staff & Osobní Kouč</b>. Mám napojení na tvůj Druhý mozek v reálném čase.</p>
+              <p class="text-[11px] text-slate-600">Sleduji tvé dnešní priority: <b>4 Baluo klientské reporty</b> (do 14:00), <b>prezentaci pro Děkana Hápa</b> (14:00–16:00) a <b>fitko s Pájou</b> (16:30).</p>
+              <p class="text-[11px] text-slate-600">Zeptej se mě na cokoliv, nadiktuj myšlenku nebo nech zhodnotit situaci!</p>
             </div>
           </div>
         </div>
 
         <!-- Rychlé akce -->
         <div class="py-2 flex space-x-1.5 overflow-x-auto no-scrollbar">
-          <button onclick="sendQuickPrompt('Zhodnoť můj dnešní časový rozvrh po uvolnění schůzky s Křečkem.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">⏱️ Analýza času</button>
-          <button onclick="sendQuickPrompt('Jak nastavit agendu pro hovor se Zbyňkem ohledně Burdy?')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">🤝 Agenda Zbyňa</button>
-          <button onclick="sendQuickPrompt('Shrň strategické argumenty pro Děkana Hápa včetně projektu FAČR.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">👑 Děkan Háp</button>
+          <button onclick="sendQuickPrompt('Zhodnoť můj aktuální časový plán na odpoledne a řekni mi, do čeho se hned pustit.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">⏱️ Co teď hned?</button>
+          <button onclick="sendQuickPrompt('Shrň klíčové argumenty a projekt FAČR pro čtvrteční schůzku s Děkanem Hápem.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">👑 Děkan Háp & FAČR</button>
+          <button onclick="sendQuickPrompt('Jak vyřešit strategii se Zbyňkem a offboarding Jirky Burdy do čtvrtka?')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">🤝 Zbyňa & StartItUp</button>
+          <button onclick="sendQuickPrompt('Potřebuji zkontrolovat registraci ClinicalTrials a kurz analytika.')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium rounded-full border border-slate-200 shrink-0">🔬 Ph.D. úkoly</button>
         </div>
 
-        <!-- Chat Input -->
-        <div class="pt-2 border-t border-slate-100 flex items-center space-x-2">
-          <input id="aiChatInput" type="text" placeholder="Napiš zprávu pro Chief of Staff..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-          <button onclick="sendChatMessage()" class="p-2 bg-indigo-600 text-white rounded-xl active:scale-95 transition-transform shadow-xs">
+        <!-- Chat Input s hlasovým diktováním -->
+        <div class="pt-2 border-t border-slate-100 flex items-center space-x-1.5">
+          <input id="aiChatInput" type="text" placeholder="Napiš nebo nadiktuj zprávu pro Kouče..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          <button id="aiMicBtn" onclick="toggleVoiceDictationChat()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl active:scale-95 transition-all border border-slate-200" title="Diktovat hlasem">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+          </button>
+          <button onclick="sendChatMessage()" id="aiSendBtn" class="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl active:scale-95 transition-transform shadow-xs">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
           </button>
         </div>
@@ -339,14 +339,14 @@
           </div>
           <div class="flex items-center justify-between">
             <span class="font-medium text-slate-700">AI Model:</span>
-            <span class="font-bold text-slate-800">Gemini 3.8 Flash High</span>
+            <span class="font-bold text-slate-800">Gemini 2.5 Flash (Google AI Studio)</span>
           </div>
         </div>
 
         <!-- GitHub Personal Access Token -->
         <div class="space-y-1.5 p-3 bg-white border border-slate-200 rounded-xl">
           <label class="text-xs font-bold text-slate-800 flex items-center justify-between">
-            <span>GitHub Personal Token (pro Cloud zápis z mobilu)</span>
+            <span>GitHub Personal Token (Cloud zápis z mobilu)</span>
             <span id="tokenStatusBadge" class="text-[10px] font-semibold text-slate-400">Nenastaveno</span>
           </label>
           <input id="githubTokenInput" type="text" placeholder="gho_... nebo ghp_..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
@@ -359,10 +359,16 @@
 
         <!-- Google Gemini API Token -->
         <div class="space-y-1.5 p-3 bg-white border border-slate-200 rounded-xl">
-          <label class="text-xs font-bold text-slate-800">Google Gemini API Token (z Google Ultra)</label>
-          <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-          <p class="text-[11px] text-slate-500 leading-tight">Pro přímé volání Gemini 3.8 z mobilního AI kouče.</p>
-          <button onclick="saveApiKey()" class="mt-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium rounded-lg active:scale-95 transition-all">Uložit klíč v mobilu</button>
+          <label class="text-xs font-bold text-slate-800 flex items-center justify-between">
+            <span>Google Gemini API Token</span>
+            <span id="geminiStatusBadge" class="text-[10px] font-semibold text-slate-400">Nenastaveno</span>
+          </label>
+          <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          <p class="text-[11px] text-slate-500 leading-tight">Získáš zdarma v Google AI Studio (tlačítko <b>Get API key</b>). Umožňuje živý 24/7 chat s Chief of Staff přímo z mobilu!</p>
+          <div class="flex space-x-2 pt-1">
+            <button onclick="saveApiKey()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all">Uložit Gemini klíč</button>
+            <button onclick="pasteGeminiToSettingsFromClipboard()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg active:scale-95 transition-all">📋 Vložit</button>
+          </div>
         </div>
 
         <!-- Zabezpečení -->
@@ -411,7 +417,7 @@
     // Web Speech API
     let isDictating = false;
     let recognition = null;
-    let activeDictationTarget = 'inbox'; // 'inbox' nebo 'home'
+    let activeDictationTarget = 'inbox'; // 'inbox', 'home' nebo 'chat'
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -422,7 +428,9 @@
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        const targetId = activeDictationTarget === 'home' ? 'quickCaptureInput' : 'inboxInput';
+        let targetId = 'inboxInput';
+        if (activeDictationTarget === 'home') targetId = 'quickCaptureInput';
+        else if (activeDictationTarget === 'chat') targetId = 'aiChatInput';
         const input = document.getElementById(targetId);
         if (input) {
           input.value = input.value ? input.value + " " + transcript : transcript;
@@ -832,6 +840,11 @@
       toggleVoiceDictation('quickCaptureInput');
     }
 
+    function toggleVoiceDictationChat() {
+      activeDictationTarget = 'chat';
+      toggleVoiceDictation('aiChatInput');
+    }
+
     function toggleVoiceDictation(targetInputId = 'inboxInput') {
       if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
         alert("Hlasové diktování není v tomto prohlížeči plně podporováno. Použij Chrome na Androidu nebo zadej text ručně.");
@@ -840,13 +853,16 @@
 
       isDictating = !isDictating;
       const isHome = activeDictationTarget === 'home';
+      const isChat = activeDictationTarget === 'chat';
       const indicator = isHome ? document.getElementById('homeDictationIndicator') : document.getElementById('dictationIndicator');
-      const mic = isHome ? document.getElementById('homeDictationMicBtn') : document.getElementById('dictationMicBtn');
+      let mic = document.getElementById('dictationMicBtn');
+      if (isHome) mic = document.getElementById('homeDictationMicBtn');
+      else if (isChat) mic = document.getElementById('aiMicBtn');
 
       if (isDictating) {
-        if (indicator) indicator.classList.remove('hidden');
+        if (indicator && !isChat) indicator.classList.remove('hidden');
         if (mic) {
-          mic.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-700');
+          mic.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-700', 'ring-2', 'ring-rose-500/30');
           if (isHome) {
             const lbl = document.getElementById('homeDictationLabel');
             if (lbl) lbl.innerText = "Poslouchám... klepni pro stop";
@@ -869,13 +885,16 @@
 
       const micHome = document.getElementById('homeDictationMicBtn');
       if (micHome) {
-        micHome.classList.remove('bg-rose-50', 'border-rose-200', 'text-rose-700');
+        micHome.classList.remove('bg-rose-50', 'border-rose-300', 'text-rose-700', 'ring-2', 'ring-rose-500/30');
         const lbl = document.getElementById('homeDictationLabel');
         if (lbl) lbl.innerText = "Diktovat hlasem (česky)";
       }
 
       const micInbox = document.getElementById('dictationMicBtn');
-      if (micInbox) micInbox.classList.remove('bg-rose-50', 'border-rose-200', 'text-rose-700');
+      if (micInbox) micInbox.classList.remove('bg-rose-50', 'border-rose-300', 'text-rose-700', 'ring-2', 'ring-rose-500/30');
+
+      const micChat = document.getElementById('aiMicBtn');
+      if (micChat) micChat.classList.remove('bg-rose-50', 'border-rose-300', 'text-rose-700', 'ring-2', 'ring-rose-500/30');
 
       if (recognition) {
         try { recognition.stop(); } catch(e){}
@@ -985,51 +1004,250 @@
       }
     }
 
-    // AI Chat
+    // ==========================================
+    // AI CHIEF OF STAFF & GEMINI LIVE API ENGINE
+    // ==========================================
+    let chatHistory = [];
+
     function sendQuickPrompt(promptText) {
       document.getElementById('aiChatInput').value = promptText;
       sendChatMessage();
     }
 
-    function sendChatMessage() {
+    function speakText(btn, text) {
+      if (!('speechSynthesis' in window)) {
+        alert("Hlasový výstup není v tomto prohlížeči podporován.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const clean = text.replace(/<[^>]*>?/gm, '').replace(/[*_#`•]/g, ' ');
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = 'cs-CZ';
+      utterance.rate = 1.05;
+
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = "<span>🔊 Mluvím...</span>";
+      btn.classList.add('text-indigo-600', 'font-bold');
+
+      utterance.onend = () => {
+        btn.innerHTML = origHtml;
+        btn.classList.remove('text-indigo-600', 'font-bold');
+      };
+      utterance.onerror = () => {
+        btn.innerHTML = origHtml;
+        btn.classList.remove('text-indigo-600', 'font-bold');
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function formatAiMarkdown(text) {
+      if (!text) return "";
+      let escaped = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+      escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+      escaped = escaped.replace(/\*(.*?)\*/g, '<i>$1</i>');
+      escaped = escaped.replace(/^### (.*$)/gim, '<h4 class="font-bold text-slate-900 mt-2 mb-1">$1</h4>');
+      escaped = escaped.replace(/^## (.*$)/gim, '<h3 class="font-bold text-slate-900 text-xs uppercase tracking-wide mt-2.5 mb-1">$1</h3>');
+      escaped = escaped.replace(/^# (.*$)/gim, '<h2 class="font-extrabold text-slate-900 text-sm mt-3 mb-1.5">$1</h2>');
+      escaped = escaped.replace(/^\s*[-*]\s+(.*$)/gim, '<div class="flex items-start space-x-1.5 my-0.5"><span class="text-indigo-600 font-bold shrink-0">•</span><span>$1</span></div>');
+      escaped = escaped.replace(/^\s*(\d+)\.\s+(.*$)/gim, '<div class="flex items-start space-x-1.5 my-0.5"><span class="text-indigo-600 font-bold shrink-0">$1.</span><span>$2</span></div>');
+      escaped = escaped.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-slate-200/70 text-slate-800 rounded font-mono text-[11px]">$1</code>');
+      escaped = escaped.replace(/\n\n/g, '<br><br>');
+      escaped = escaped.replace(/(?<!<\/div>|<br>)\n/g, '<br>');
+      return escaped;
+    }
+
+    function promptForApiKey() {
+      const manual = prompt("Vlož sem svůj Gemini API klíč z Google AI Studio (začíná AIzaSy...):", "");
+      if (manual && manual.trim().length > 10) {
+        localStorage.setItem('gemini_api_key', manual.trim());
+        const inp = document.getElementById('geminiApiKeyInput');
+        if (inp) inp.value = manual.trim();
+        updateGeminiStatusBadge();
+        alert("✅ Gemini API klíč uložen! Nyní můžeš poslat zprávu Koučovi.");
+      }
+    }
+
+    async function sendChatMessage() {
       const input = document.getElementById('aiChatInput');
       const text = input.value.trim();
       if (!text) return;
 
       const chatBox = document.getElementById('aiChatBox');
       
+      // Uživatelská bublina
       const userMsg = document.createElement('div');
       userMsg.className = 'flex justify-end';
       userMsg.innerHTML = `
         <div class="p-3 bg-indigo-600 text-white rounded-2xl rounded-tr-none text-xs leading-relaxed max-w-[85%] shadow-xs">
-          ${text}
+          ${text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
         </div>
       `;
       chatBox.appendChild(userMsg);
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      setTimeout(() => {
-        let reply = "Rozumím Davide. Zapracovávám do kontextu.";
-        if (text.includes("rozvrh") || text.includes("čas") || text.includes("Křeček")) {
-          reply = "<b>Koučink rozvrhu:</b> Skvělá zpráva – po vyjasnění, že Aleš Křeček není schůzka, máš <b>čistý blok až do 11:30 na klientská data Balua</b>! Odpoledne je prostor na Děkana Hápa. V 16:30 fitko s Pájou.";
-        } else if (text.includes("Zbyň")) {
-          reply = "<b>Taktika pro Zbyňka:</b> Zbyňa bere obchod na plný plyn. Klíčové je dohodnout čistý konec Jirky Burdy, ale s podmínkou, že do čtvrtka 8. 10. bezchybně spustí web Atomika. StartItUp tak sníží náklady na nulu.";
-        } else if (text.includes("Háp") || text.includes("Děkan") || text.includes("FAČR")) {
-          reply = "<b>Strategie pro Děkana Hápa:</b> Prezentace AC FTK (1. 1. 2027 start). Přidáváme velký trumf: <b>Projekt FAČR reprezentace na Baluu</b> (Křeček + Hrubý + Hůlka + Prycl – VALD & InBody) jako vlajkovou loď smluvního výzkumu!";
-        }
+      const apiKey = localStorage.getItem('gemini_api_key') || "";
+      if (!apiKey) {
+        // Zobrazit návod s tlačítkem na vložení klíče
+        const alertMsg = document.createElement('div');
+        alertMsg.className = 'flex items-start space-x-2';
+        alertMsg.innerHTML = `
+          <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center text-xs font-bold shrink-0">⚠️</div>
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-none text-xs text-amber-900 leading-relaxed max-w-[88%] space-y-2">
+            <p class="font-bold">Chybí propojení s Gemini API.</p>
+            <p class="text-[11px] text-amber-800">V otevřeném Google AI Studio klikni vlevo na <b>Get API key</b> &rarr; <b>Create API key</b> &rarr; zkopíruj kód.</p>
+            <button onclick="promptForApiKey()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-xs active:scale-95 transition-all">🔑 Vložit Gemini API klíč</button>
+          </div>
+        `;
+        chatBox.appendChild(alertMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return;
+      }
 
+      // Loading indikátor
+      const loadingId = 'loading_' + Date.now();
+      const loadingMsg = document.createElement('div');
+      loadingMsg.id = loadingId;
+      loadingMsg.className = 'flex items-start space-x-2';
+      loadingMsg.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none text-xs text-slate-500 flex items-center space-x-1.5">
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse [animation-delay:200ms]"></span>
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse [animation-delay:400ms]"></span>
+          <span class="text-[11px] font-medium text-slate-600 ml-1">Chief of Staff přemýšlí...</span>
+        </div>
+      `;
+      chatBox.appendChild(loadingMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Sestavení kontextu a system instruction
+      const systemInstruction = `Jsi Chief of Staff, strategický poradce a nekompromisní osobní kouč Davida Prycla.
+Tvým úkolem je hlídat jeho čas, priority, bránit rozptylování a pomáhat mu dosahovat špičkových výsledků ("Být lepší!").
+
+O DAVIDOVI:
+- David Prycl: BDM v Aplikačním centru Baluo (FTK UP), Transfer Scout (FTK UP), Ph.D. student kinantropologie, spoluzakladatel StartItUp (B2B SaaS / AI nástroje), zakladatel Svišti v pohybu.
+- Rodina: Partnerka Janča, dcerky Nelinka a Andrejka.
+- Styl: Extrémní tah na branku, vizionář, spousta rozpracovaných věcí. Nesnáší korporátní balast a prázdné řeči. Potřebuje jasné priority, vnější tlak, přímočaré zhodnocení a konkrétní kroky ("Být lepší!").
+- Klíčoví lidé: doc. Martin Sigmund (ředitel Baluo, Davidův nadřízený - pozor na dlouhé hovory, držet 5min limit), Zbyněk (StartItUp společník, řeší obchod), Děkan Jan Háp (prezentace AC FTK a smluvního výzkumu FAČR).
+
+AKTUÁLNÍ STAV DRUHÉHO MOZKU A DNEŠNÍ ROZVRH (SSOT):
+${currentRawMarkdown || "Prioritní soubor načten z GitHubu/lokálního disku."}
+
+PRAVIDLA TVÉ KOMUNIKACE:
+1. Mluv česky, přímo k věci, energicky, bez omáčky a klišé.
+2. Když se David ptá na rozvrh nebo priority, vycházej VŽDY z jeho aktuálního plánu výše.
+3. Pokud David prokrastinuje nebo se nechal zdržet hovorem, pomož mu okamžitě zreorganizovat zbývající čas a prioritizovat to nejdůležitější (P0).
+4. Pokud David chce něco zaznamenat nebo naplánovat, odpověz konkrétně a navrhni přesné znění.
+5. Formátuj odpovědi přehledně (používej tučné písmo pro klíčové termíny, krátké odrážky).
+6. Tvá role není pasivně přitakávat, ale vést, směrovat a motivovat Davida k excelenci.`;
+
+      // Přidat do historie chatu
+      chatHistory.push({
+        role: "user",
+        parts: [{ text: text }]
+      });
+      if (chatHistory.length > 16) {
+        chatHistory = chatHistory.slice(-16);
+      }
+
+      // Modely k vyzkoušení s fallbackem
+      const preferredModel = localStorage.getItem('gemini_working_model') || "gemini-2.5-flash";
+      const modelsToTry = [...new Set([preferredModel, "gemini-2.0-flash", "gemini-1.5-flash"])];
+
+      let success = false;
+      let replyText = "";
+      let lastError = "";
+
+      for (const model of modelsToTry) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: systemInstruction }] },
+              contents: chatHistory,
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2048
+              }
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+              replyText = data.candidates[0].content.parts.map(p => p.text).join("");
+              localStorage.setItem('gemini_working_model', model);
+              const modelInd = document.getElementById('aiModelIndicator');
+              if (modelInd) modelInd.innerText = `Poháněno ${model} • Live`;
+              success = true;
+              break;
+            }
+          } else {
+            const errJson = await res.json().catch(() => ({}));
+            lastError = errJson.error ? errJson.error.message : `HTTP ${res.status}`;
+            console.warn(`Pokus s ${model} selhal:`, lastError);
+          }
+        } catch (err) {
+          lastError = err.message;
+          console.warn(`Chyba spojení s ${model}:`, err);
+        }
+      }
+
+      // Odstranit loading bubble
+      const loadEl = document.getElementById(loadingId);
+      if (loadEl) loadEl.remove();
+
+      if (success && replyText) {
+        chatHistory.push({
+          role: "model",
+          parts: [{ text: replyText }]
+        });
+
+        const formattedHtml = formatAiMarkdown(replyText);
         const aiMsg = document.createElement('div');
         aiMsg.className = 'flex items-start space-x-2';
+        
+        // Unikátní ID pro TTS čtení
+        const msgId = 'aimsg_' + Date.now();
+        window[msgId + '_text'] = replyText;
+
         aiMsg.innerHTML = `
           <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
-          <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none text-xs text-slate-800 leading-relaxed max-w-[85%]">
-            ${reply}
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none text-xs text-slate-800 leading-relaxed max-w-[88%] space-y-2">
+            <div>${formattedHtml}</div>
+            <div class="pt-1.5 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-400">
+              <button onclick="speakText(this, window['${msgId}_text'])" class="flex items-center space-x-1 hover:text-indigo-600 active:scale-95 transition-all">
+                <span>🔊 Poslechnout</span>
+              </button>
+              <button onclick="navigator.clipboard.writeText(window['${msgId}_text']); alert('Zkopírováno!');" class="hover:text-slate-600 active:scale-95 transition-all">
+                📋 Kopírovat
+              </button>
+            </div>
           </div>
         `;
         chatBox.appendChild(aiMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }, 500);
+      } else {
+        const errEl = document.createElement('div');
+        errEl.className = 'flex items-start space-x-2';
+        errEl.innerHTML = `
+          <div class="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center text-xs font-bold shrink-0">✕</div>
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-2xl rounded-tl-none text-xs text-rose-800 leading-relaxed max-w-[88%] space-y-1">
+            <p class="font-bold">Chyba při volání Gemini API:</p>
+            <p class="text-[11px] text-rose-700">${lastError || "Nepodařilo se navázat spojení. Zkontroluj klíč nebo internet."}</p>
+            <button onclick="promptForApiKey()" class="text-[11px] underline font-semibold text-rose-800 pt-1">Zkontrolovat nebo změnit API klíč</button>
+          </div>
+        `;
+        chatBox.appendChild(errEl);
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
     function saveGitHubToken() {
@@ -1056,7 +1274,6 @@
     }
 
     async function pasteFromClipboard() {
-      // 1. Zkusit standardní Clipboard API
       try {
         if (navigator.clipboard && navigator.clipboard.readText) {
           const text = await navigator.clipboard.readText();
@@ -1070,7 +1287,6 @@
         console.warn("Clipboard API omezeno:", e);
       }
 
-      // 2. Android Spolehlivý fallback: Nativní prompt dialog (v něm Vložit funguje 100%)
       const manual = prompt("Vlož sem svůj GitHub token (dlouze podrž prst v řádku a klepni na Vložit):", "");
       if (manual && manual.trim().length > 5) {
         document.getElementById('quickTokenInput').value = manual.trim();
@@ -1101,24 +1317,74 @@
       const key = document.getElementById('geminiApiKeyInput').value.trim();
       if (key) {
         localStorage.setItem('gemini_api_key', key);
+        updateGeminiStatusBadge();
         alert("✅ Gemini API klíč byl bezpečně uložen do telefonu.");
       }
     }
 
-    // Automatická aktivace tokenu z odkazu (1-klikový setup z chatu)
+    async function pasteGeminiToSettingsFromClipboard() {
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim().length > 10) {
+            document.getElementById('geminiApiKeyInput').value = text.trim();
+            saveApiKey();
+            return;
+          }
+        }
+      } catch (e) {}
+
+      const manual = prompt("Vlož sem svůj Google Gemini API klíč (dlouze podrž prst a zvol Vložit):", "");
+      if (manual && manual.trim().length > 5) {
+        document.getElementById('geminiApiKeyInput').value = manual.trim();
+        saveApiKey();
+      }
+    }
+
+    function updateGeminiStatusBadge() {
+      const key = localStorage.getItem('gemini_api_key');
+      const badge = document.getElementById('geminiStatusBadge');
+      const aiBadge = document.getElementById('aiStatusBadge');
+      if (key) {
+        if (badge) {
+          badge.innerText = "Aktivní (Uloženo)";
+          badge.className = "text-[10px] font-bold text-emerald-600";
+        }
+        if (aiBadge) {
+          aiBadge.innerText = "Online (Gemini Live)";
+          aiBadge.className = "text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200";
+        }
+      } else {
+        if (badge) {
+          badge.innerText = "Nenastaveno";
+          badge.className = "text-[10px] font-semibold text-slate-400";
+        }
+        if (aiBadge) {
+          aiBadge.innerText = "Chybí API klíč";
+          aiBadge.className = "text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200";
+        }
+      }
+    }
+
+    // Automatická aktivace tokenů z URL odkazu (1-klikový setup z chatu)
     try {
       const urlParams = new URLSearchParams(window.location.search);
       let incomingToken = urlParams.get('token');
-      if (!incomingToken && window.location.hash) {
-        const hashMatch = window.location.hash.match(/token=([a-zA-Z0-9_]+)/);
-        if (hashMatch) incomingToken = hashMatch[1];
+      let incomingGemini = urlParams.get('gemini_key') || urlParams.get('gemini');
+      if (window.location.hash) {
+        const hashMatchToken = window.location.hash.match(/token=([a-zA-Z0-9_\-]+)/);
+        if (hashMatchToken) incomingToken = hashMatchToken[1];
+        const hashGeminiMatch = window.location.hash.match(/gemini(?:_key)?=([a-zA-Z0-9_\-]+)/);
+        if (hashGeminiMatch) incomingGemini = hashGeminiMatch[1];
       }
       if (incomingToken && incomingToken.trim().length > 10) {
         localStorage.setItem('github_token', incomingToken.trim());
-        // Vyčistit URL pro bezpečnost, ať nezůstává v historii prohlížeče
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState(null, document.title, window.location.pathname);
-        }
+      }
+      if (incomingGemini && incomingGemini.trim().length > 10) {
+        localStorage.setItem('gemini_api_key', incomingGemini.trim());
+      }
+      if ((incomingToken || incomingGemini) && window.history && window.history.replaceState) {
+        window.history.replaceState(null, document.title, window.location.pathname);
       }
     } catch (e) {
       console.warn("URL token handling error:", e);
@@ -1143,6 +1409,7 @@
       const inp = document.getElementById('geminiApiKeyInput');
       if (inp) inp.value = savedGeminiKey;
     }
+    updateGeminiStatusBadge();
 
     // Prvotní načtení dat
     fetchData();
