@@ -19,15 +19,13 @@
       animation: pulse-subtle 1.2s infinite ease-in-out;
     }
     body {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     input, textarea {
-      -webkit-user-select: auto;
-      user-select: auto;
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
     }
     .no-scrollbar::-webkit-scrollbar {
       display: none;
@@ -121,7 +119,7 @@
           </div>
         </div>
         <div class="space-y-2 pt-1">
-          <input id="quickTokenInput" type="text" placeholder="Vlož token: gho_..." class="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <input id="quickTokenInput" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Vlož token: gho_..." class="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <div class="flex space-x-2">
             <button onclick="saveQuickToken()" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs">
               Aktivovat Cloud mozek
@@ -929,42 +927,57 @@
     }
 
     function saveQuickToken() {
-      const token = document.getElementById('quickTokenInput').value.trim();
+      const input = document.getElementById('quickTokenInput');
+      const token = input ? input.value.trim() : "";
       if (token) {
         localStorage.setItem('github_token', token);
-        alert("✅ GitHub Token uložen! Načítám data z Druhého mozku...");
+        alert("✅ GitHub Token uložen! Spojuji se s Druhým mozkem v cloudu...");
         fetchData();
+      } else {
+        pasteFromClipboard();
       }
     }
 
     async function pasteFromClipboard() {
+      // 1. Zkusit standardní Clipboard API
       try {
-        const text = await navigator.clipboard.readText();
-        if (text && text.trim().startsWith('gh')) {
-          document.getElementById('quickTokenInput').value = text.trim();
-          saveQuickToken();
-          return;
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim().length > 10) {
+            document.getElementById('quickTokenInput').value = text.trim();
+            saveQuickToken();
+            return;
+          }
         }
-      } catch (e) {}
-      const input = document.getElementById('quickTokenInput');
-      input.focus();
-      input.select();
-      alert("Dlouze podrž prst v políčku a zvol 'Vložit'.");
+      } catch (e) {
+        console.warn("Clipboard API omezeno:", e);
+      }
+
+      // 2. Android Spolehlivý fallback: Nativní prompt dialog (v něm Vložit funguje 100%)
+      const manual = prompt("Vlož sem svůj GitHub token (dlouze podrž prst v řádku a klepni na Vložit):", "");
+      if (manual && manual.trim().length > 5) {
+        document.getElementById('quickTokenInput').value = manual.trim();
+        saveQuickToken();
+      }
     }
 
     async function pasteToSettingsFromClipboard() {
       try {
-        const text = await navigator.clipboard.readText();
-        if (text && text.trim().startsWith('gh')) {
-          document.getElementById('githubTokenInput').value = text.trim();
-          saveGitHubToken();
-          return;
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim().length > 10) {
+            document.getElementById('githubTokenInput').value = text.trim();
+            saveGitHubToken();
+            return;
+          }
         }
       } catch (e) {}
-      const input = document.getElementById('githubTokenInput');
-      input.focus();
-      input.select();
-      alert("Dlouze podrž prst v políčku a zvol 'Vložit'.");
+
+      const manual = prompt("Vlož sem svůj GitHub token (dlouze podrž prst a zvol Vložit):", "");
+      if (manual && manual.trim().length > 5) {
+        document.getElementById('githubTokenInput').value = manual.trim();
+        saveGitHubToken();
+      }
     }
 
     function saveApiKey() {
@@ -975,7 +988,26 @@
       }
     }
 
-    // Inicializace
+    // Automatická aktivace tokenu z odkazu (1-klikový setup z chatu)
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      let incomingToken = urlParams.get('token');
+      if (!incomingToken && window.location.hash) {
+        const hashMatch = window.location.hash.match(/token=([a-zA-Z0-9_]+)/);
+        if (hashMatch) incomingToken = hashMatch[1];
+      }
+      if (incomingToken && incomingToken.trim().length > 10) {
+        localStorage.setItem('github_token', incomingToken.trim());
+        // Vyčistit URL pro bezpečnost, ať nezůstává v historii prohlížeče
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, document.title, window.location.pathname);
+        }
+      }
+    } catch (e) {
+      console.warn("URL token handling error:", e);
+    }
+
+    // Inicializace stavu z paměti
     const savedGhToken = localStorage.getItem('github_token');
     if (savedGhToken) {
       const inp = document.getElementById('githubTokenInput');
@@ -995,7 +1027,7 @@
       if (inp) inp.value = savedGeminiKey;
     }
 
-    // Prvotní načtení
+    // Prvotní načtení dat
     fetchData();
   </script>
 </body>
