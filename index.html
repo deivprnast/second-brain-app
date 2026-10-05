@@ -173,12 +173,16 @@
           </div>
 
           <div class="flex items-center space-x-2">
-            <button onclick="toggleVoiceDictationHome()" id="homeDictationMicBtn" class="flex-1 flex items-center justify-center space-x-2 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 active:scale-95 transition-all shadow-2xs">
+            <button onclick="toggleVoiceDictationHome()" id="homeDictationMicBtn" class="flex-1 flex items-center justify-center space-x-1.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 active:scale-95 transition-all shadow-2xs">
               <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-              <span id="homeDictationLabel">Diktovat hlasem (česky)</span>
+              <span id="homeDictationLabel">Diktovat</span>
             </button>
-            <button onclick="submitQuickCaptureHome('task')" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold rounded-xl active:scale-95 transition-all shrink-0" title="Uložit rovnou jako aktivní úkol dne">
-              + Jako úkol
+            <button onclick="submitQuickCaptureHome('task')" class="px-2.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold rounded-xl active:scale-95 transition-all shrink-0" title="Uložit rovnou jako aktivní úkol dne">
+              + Úkol
+            </button>
+            <button onclick="submitQuickCaptureHome('reflection')" id="homeReflectionBtn" class="px-2.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold rounded-xl active:scale-95 transition-all shrink-0 flex items-center space-x-1" title="Uložit jako reflexi, pocity a debrief (Plán vs. Realita)">
+              <span>💭</span>
+              <span>Reflexe</span>
             </button>
           </div>
         </div>
@@ -242,6 +246,23 @@
           </div>
         </section>
 
+        <!-- Sekce Poslední reflexe & Debriefy -->
+        <section class="space-y-2">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
+              <span>💭</span>
+              <span>Reflexe & Debriefy (Plán vs. Realita)</span>
+            </h2>
+            <span class="text-[10px] text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Emoční paměť</span>
+          </div>
+          <div id="reflectionsList" class="space-y-2.5">
+            <!-- Dynamicky generované karty reflexí -->
+            <div class="p-3 bg-purple-50/50 border border-purple-100 rounded-xl text-xs text-slate-500 text-center">
+              Načítám reflexe z mozku...
+            </div>
+          </div>
+        </section>
+
       </div>
 
       <!-- TAB 2: INBOX & HLASOVÝ ZÁCHYT -->
@@ -266,9 +287,15 @@
               <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
               <span id="dictationLabel">Diktovat hlasem</span>
             </button>
-            <button onclick="submitInboxThought()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all">
-              Uložit text
-            </button>
+            <div class="flex items-center space-x-1.5">
+              <button onclick="submitInboxThought()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm active:scale-95 transition-all">
+                Uložit text
+              </button>
+              <button onclick="submitInboxReflection()" class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-xs font-semibold rounded-lg active:scale-95 transition-all flex items-center space-x-1" title="Uložit jako reflexi (Plán vs. Realita)">
+                <span>💭</span>
+                <span>Reflexe</span>
+              </button>
+            </div>
           </div>
           <div id="dictationIndicator" class="hidden p-2 bg-rose-50 border border-rose-200 rounded-lg flex items-center space-x-2 text-xs text-rose-700 pulse-record">
             <span class="w-2 h-2 rounded-full bg-rose-600"></span>
@@ -946,6 +973,7 @@
             document.getElementById('syncIndicator').className = "text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 shrink-0";
             document.getElementById('settingsSyncMode').innerText = "Cloud 24/7 (GitHub Direct)";
             renderUI(parsedData);
+            fetchReflections(ghToken);
             return;
           }
         } catch (e) {
@@ -1346,8 +1374,12 @@
         return;
       }
       stopVoiceDictation();
-      const isTask = mode === 'task' || val.toLowerCase().startsWith('úkol') || val.toLowerCase().startsWith('vyřešit');
-      await submitThoughtDirect(val, isTask);
+      if (mode === 'reflection') {
+        await submitReflectionDirect(val);
+      } else {
+        const isTask = mode === 'task' || val.toLowerCase().startsWith('úkol') || val.toLowerCase().startsWith('vyřešit');
+        await submitThoughtDirect(val, isTask);
+      }
       input.value = "";
     }
 
@@ -1357,6 +1389,15 @@
       if (!text) return;
       stopVoiceDictation();
       await submitThoughtDirect(text, false);
+      input.value = "";
+    }
+
+    async function submitInboxReflection() {
+      const input = document.getElementById('inboxInput');
+      const text = input.value.trim();
+      if (!text) return;
+      stopVoiceDictation();
+      await submitReflectionDirect(text);
       input.value = "";
     }
 
@@ -1561,6 +1602,297 @@ Vrať POUZE validní JSON bez markdown značek:
         }
       } else {
         alert("Chybí GitHub token. Aktivuj Cloud v záložce Cloud.");
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function parseReflectionWithGemini(rawText) {
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) return null;
+
+      const workingModel = localStorage.getItem('gemini_working_model') || 'gemini-3.8-flash';
+      const modelsToTry = [workingModel, 'gemini-1.5-flash', 'gemini-1.5-pro'];
+
+      const nowStr = new Date().toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' });
+      const timeStr = new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+
+      const prompt = `Jsi osobní AI kouč, psychologický exoskeleton a Chief of Staff pro Davida Prycla (BDM AC Baluo FTK UP, Transfer Scout, StartItUp).
+David ti v běhu z mobilu nadiktoval své bezprostřední pocity, reflexi schůzky, události nebo dne (debrief):
+"${rawText}"
+
+Dnešek je: ${nowStr}, čas: ${timeStr}.
+
+Tvůj úkol:
+1. title: Výstižný název reflexe (max 6 slov, např. 'Schůzka s Hápem o rozpočtu', 'Večerní vyčerpání a tlak ze StartItUp').
+2. context: Kde se to stalo a co bylo spouštěčem (1-2 věty).
+3. planVsReality: Co bylo původně v plánu vs. co se reálně stalo.
+4. feelingsAndPerception: Jak to David vnímal, jaké měl pocity, emoce, pochybnosti, frustraci nebo radost. Zůstaň věrný jeho hlasu a bez souzení.
+5. coachInsights: Tvůj stručný koučovací vhled / uklidnění / pojmenování reality pro Druhý mozek.
+6. impact: Co si z toho má systém zapamatovat pro PEOPLE.md (o lidech) nebo LEARNING_LOG.md (o Davidově tempu/energii).
+
+Vrať POUZE validní JSON bez markdown značek:
+{
+  "title": "...",
+  "context": "...",
+  "planVsReality": "...",
+  "feelingsAndPerception": "...",
+  "coachInsights": "...",
+  "impact": "..."
+}`;
+
+      for (const model of modelsToTry) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.2,
+                response_mime_type: "application/json"
+              }
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+              const rawJson = data.candidates[0].content.parts[0].text;
+              const clean = rawJson.trim().replace(/^```json/i, '').replace(/```$/i, '').trim();
+              return JSON.parse(clean);
+            }
+          }
+        } catch (e) {
+          console.warn("Chyba AI reflexe:", e);
+        }
+      }
+      return null;
+    }
+
+    async function submitReflectionDirect(rawText) {
+      const ghToken = localStorage.getItem('github_token') || "";
+      const nowFormatted = new Date().toLocaleDateString('cs-CZ') + " (" + new Date().toLocaleDateString('cs-CZ', { weekday: 'long' }) + " " + new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }) + ")";
+
+      const refBtn = document.getElementById('homeReflectionBtn');
+      const oldLabel = refBtn ? refBtn.innerHTML : '';
+      if (refBtn) refBtn.innerHTML = `<span>⏳</span><span>AI analyzuje...</span>`;
+
+      try {
+        let aiParsed = null;
+        try {
+          aiParsed = await parseReflectionWithGemini(rawText);
+        } catch(err) {
+          console.warn("AI reflection parse failed:", err);
+        }
+
+        if (ghToken) {
+          if (refBtn) refBtn.innerHTML = `<span>⏳</span><span>Ukládám do Mozku...</span>`;
+
+          const ghRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/BRAIN/REFLECTIONS.md`, {
+            headers: {
+              'Authorization': `Bearer ${ghToken}`,
+              'Accept': 'application/vnd.github.v3+json'
+            }
+          });
+
+          let currentSha = "";
+          let currentContent = "# 💭 REFLEXE, POCITY & DEBRIEF (PLÁN VS. REALITA)\n\n---\n\n";
+
+          if (ghRes.ok) {
+            const fileData = await ghRes.json();
+            currentSha = fileData.sha;
+            currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+          }
+
+          let entry = "";
+          if (aiParsed && aiParsed.title) {
+            entry = `### 🗓️ ${nowFormatted} – ${aiParsed.title}\n` +
+              `* **Kontext / Spouštěč:** ${aiParsed.context || "Zaznamenáno z mobilu"}\n` +
+              `* **Plán vs. Skutečnost:** ${aiParsed.planVsReality || "Zaznamenáno z hlasu"}\n` +
+              `* **Jak to David vnímal (Pocity & Vnímání):** ${aiParsed.feelingsAndPerception || rawText}\n` +
+              `* **Koučovací vhled Druhého mozku:** ${aiParsed.coachInsights || "Zaznamenáno do paměti."}\n` +
+              `* **Dopad na systém:** ${aiParsed.impact || "Uloženo do kontextu."}\n` +
+              `* **Surový přepis hlasu:** \`${rawText.replace(/\n/g, ' ')}\`\n\n---\n\n`;
+          } else {
+            entry = `### 🗓️ ${nowFormatted} – Rychlá reflexe z mobilu\n` +
+              `* **Záznam:** ${rawText}\n\n---\n\n`;
+          }
+
+          let updatedMd = "";
+          const splitMarker = "---\n\n";
+          if (currentContent.includes(splitMarker)) {
+            const parts = currentContent.split(splitMarker);
+            updatedMd = parts[0] + splitMarker + entry + parts.slice(1).join(splitMarker);
+          } else {
+            updatedMd = currentContent + "\n\n---\n\n" + entry;
+          }
+
+          const encoded = btoa(unescape(encodeURIComponent(updatedMd)));
+          let putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/BRAIN/REFLECTIONS.md`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${ghToken}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: `feat(reflection): ${aiParsed ? aiParsed.title : 'Reflexe z mobilu'}`,
+              content: encoded,
+              sha: currentSha || undefined
+            })
+          });
+
+          if (putRes.status === 409) {
+            const getLatest = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/BRAIN/REFLECTIONS.md`, {
+              headers: { 
+                'Authorization': `Bearer ${ghToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            if (getLatest.ok) {
+              const fileData = await getLatest.json();
+              currentSha = fileData.sha;
+              putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/BRAIN/REFLECTIONS.md`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${ghToken}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  message: `feat(reflection): ${aiParsed ? aiParsed.title : 'Reflexe z mobilu'} (retry)`,
+                  content: encoded,
+                  sha: currentSha
+                })
+              });
+            }
+          }
+
+          if (putRes.ok) {
+            alert(`💭 Reflexe "${aiParsed ? aiParsed.title : 'z mobilu'}" uložena do BRAIN/REFLECTIONS.md!\n\nAI kouč navnímal tvé pocity i plán vs. realitu.`);
+            fetchReflections(ghToken);
+            return;
+          } else {
+            const errJson = await putRes.json();
+            alert("Chyba při ukládání reflexe: " + (errJson.message || "zkontroluj token"));
+          }
+        } else {
+          alert("Chybí GitHub token. Aktivuj Cloud v záložce Cloud.");
+        }
+      } catch (err) {
+        console.error("Chyba při ukládání reflexe:", err);
+        alert("Chyba při ukládání reflexe: " + err.message);
+      } finally {
+        if (refBtn) refBtn.innerHTML = oldLabel;
+      }
+    }
+
+    function parseReflectionsMarkdown(md) {
+      if (!md) return [];
+      const entries = [];
+      const chunks = md.split(/\n### 🗓️ /);
+      for (let i = 1; i < chunks.length; i++) {
+        const chunk = chunks[i].trim();
+        if (!chunk) continue;
+        const lines = chunk.split('\n');
+        const headerLine = lines[0].trim();
+        const bodyLines = lines.slice(1);
+        
+        let context = "";
+        let planVsReality = "";
+        let feelings = "";
+        let coach = "";
+        let impact = "";
+        
+        bodyLines.forEach(l => {
+          const line = l.trim();
+          if (line.startsWith('* **Kontext / Spouštěč:**')) context = line.replace('* **Kontext / Spouštěč:**', '').trim();
+          else if (line.startsWith('* **Plán vs. Skutečnost:**')) planVsReality = line.replace('* **Plán vs. Skutečnost:**', '').trim();
+          else if (line.startsWith('* **Jak to David vnímal') || line.startsWith('* **Pocity')) feelings = line.replace(/^\* \*\*[^*]+:\*\*/, '').trim();
+          else if (line.startsWith('* **Koučovací vhled')) coach = line.replace(/^\* \*\*[^*]+:\*\*/, '').trim();
+          else if (line.startsWith('* **Propis do systému:**') || line.startsWith('* **Dopad')) impact = line.replace(/^\* \*\*[^*]+:\*\*/, '').trim();
+        });
+
+        entries.push({
+          header: headerLine,
+          context,
+          planVsReality,
+          feelings,
+          coach,
+          impact
+        });
+      }
+      return entries;
+    }
+
+    function renderReflectionsUI(reflections) {
+      const container = document.getElementById('reflectionsList');
+      if (!container) return;
+      if (!reflections || reflections.length === 0) {
+        container.innerHTML = `
+          <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-500 text-center">
+            Zatím žádná reflexe. Po schůzce nebo náročném dni použij tlačítko <b>💭 Reflexe</b> a nadiktuj, jak ses cítil a co byl plán vs. realita.
+          </div>`;
+        return;
+      }
+      
+      container.innerHTML = reflections.slice(0, 3).map(r => `
+        <div class="p-3.5 bg-gradient-to-br from-purple-50/70 via-white to-slate-50 border border-purple-200/70 rounded-2xl shadow-xs space-y-2">
+          <div class="flex items-start justify-between">
+            <h3 class="text-xs font-bold text-purple-950 flex items-center space-x-1.5 leading-snug">
+              <span>🗓️</span>
+              <span>${escapeHtml(r.header)}</span>
+            </h3>
+            <span class="text-[9px] font-bold uppercase tracking-wider text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-full shrink-0">Debrief</span>
+          </div>
+
+          ${r.planVsReality ? `
+            <div class="text-[11px] bg-white/80 p-2 rounded-xl border border-purple-100 space-y-0.5">
+              <span class="font-bold text-slate-700 block text-[10px] uppercase tracking-wide">⚖️ Plán vs. Realita:</span>
+              <span class="text-slate-600 leading-relaxed">${escapeHtml(r.planVsReality)}</span>
+            </div>` : ''}
+
+          ${r.feelings ? `
+            <div class="text-[11px] bg-rose-50/50 p-2 rounded-xl border border-rose-100 space-y-0.5">
+              <span class="font-bold text-rose-800 block text-[10px] uppercase tracking-wide">🎭 Pocity & Vnímání:</span>
+              <span class="text-slate-700 leading-relaxed">${escapeHtml(r.feelings)}</span>
+            </div>` : ''}
+
+          ${r.coach ? `
+            <div class="text-[11px] bg-indigo-50/60 p-2 rounded-xl border border-indigo-100 space-y-0.5">
+              <span class="font-bold text-indigo-900 block text-[10px] uppercase tracking-wide">🧠 Vhled AI Kouče:</span>
+              <span class="text-indigo-950 leading-relaxed font-medium">${escapeHtml(r.coach)}</span>
+            </div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    async function fetchReflections(ghToken) {
+      if (!ghToken) return;
+      try {
+        const refRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/BRAIN/REFLECTIONS.md`, {
+          headers: {
+            'Authorization': `Bearer ${ghToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        if (refRes.ok) {
+          const refData = await refRes.json();
+          const decodedRefMd = decodeURIComponent(escape(atob(refData.content.replace(/\s/g, ''))));
+          const parsedReflections = parseReflectionsMarkdown(decodedRefMd);
+          renderReflectionsUI(parsedReflections);
+        }
+      } catch(refErr) {
+        console.warn("Chyba při načítání reflexí:", refErr);
       }
     }
 
