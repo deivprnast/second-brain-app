@@ -1156,9 +1156,9 @@ PRAVIDLA TVÉ KOMUNIKACE:
         chatHistory = chatHistory.slice(-16);
       }
 
-      // Modely k vyzkoušení s fallbackem
-      const preferredModel = localStorage.getItem('gemini_working_model') || "gemini-2.5-flash";
-      const modelsToTry = [...new Set([preferredModel, "gemini-2.0-flash", "gemini-1.5-flash"])];
+      // Modely k vyzkoušení s fallbackem (Gemini 3.8 Flash je primární)
+      const preferredModel = localStorage.getItem('gemini_working_model') || "gemini-3.8-flash";
+      const modelsToTry = [...new Set([preferredModel, "gemini-3.8-flash", "gemini-2.5-flash", "gemini-1.5-flash"])];
 
       let success = false;
       let replyText = "";
@@ -1183,7 +1183,10 @@ PRAVIDLA TVÉ KOMUNIKACE:
           if (res.ok) {
             const data = await res.json();
             if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-              replyText = data.candidates[0].content.parts.map(p => p.text).join("");
+              replyText = data.candidates[0].content.parts
+                .filter(p => p.text)
+                .map(p => p.text)
+                .join("");
               localStorage.setItem('gemini_working_model', model);
               const modelInd = document.getElementById('aiModelIndicator');
               if (modelInd) modelInd.innerText = `Poháněno ${model} • Live`;
