@@ -1,0 +1,21 @@
+{
+  "name": "Druhý mozek • David Prycl",
+  "short_name": "Druhý mozek",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "description": "Osobní Chief of Staff a mobilní kokpit Davida Prycla.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
