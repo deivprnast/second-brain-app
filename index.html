@@ -1375,9 +1375,9 @@ PRAVIDLA TVÉ KOMUNIKACE:
       let incomingToken = urlParams.get('token');
       let incomingGemini = urlParams.get('gemini_key') || urlParams.get('gemini');
       if (window.location.hash) {
-        const hashMatchToken = window.location.hash.match(/token=([a-zA-Z0-9_\-]+)/);
+        const hashMatchToken = window.location.hash.match(/token=([a-zA-Z0-9_\-\.]+)/);
         if (hashMatchToken) incomingToken = hashMatchToken[1];
-        const hashGeminiMatch = window.location.hash.match(/gemini(?:_key)?=([a-zA-Z0-9_\-]+)/);
+        const hashGeminiMatch = window.location.hash.match(/gemini(?:_key)?=([a-zA-Z0-9_\-\.]+)/);
         if (hashGeminiMatch) incomingGemini = hashGeminiMatch[1];
       }
       if (incomingToken && incomingToken.trim().length > 10) {
