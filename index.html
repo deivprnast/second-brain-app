@@ -72,7 +72,7 @@
         <button onclick="pressPin('7')" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xl font-semibold text-slate-800 border border-slate-200 active:scale-95 transition-transform">7</button>
         <button onclick="pressPin('8')" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xl font-semibold text-slate-800 border border-slate-200 active:scale-95 transition-transform">8</button>
         <button onclick="pressPin('9')" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xl font-semibold text-slate-800 border border-slate-200 active:scale-95 transition-transform">9</button>
-        <button onclick="unlockApp()" class="h-14 rounded-2xl text-xs font-bold text-indigo-600 border border-indigo-100 bg-indigo-50/50 active:scale-95 transition-transform flex items-center justify-center">FaceID</button>
+        <button onclick="unlockApp()" class="h-14 rounded-2xl text-xs font-bold text-indigo-600 border border-indigo-100 bg-indigo-50/50 active:scale-95 transition-transform flex items-center justify-center">Biometrie</button>
         <button onclick="pressPin('0')" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xl font-semibold text-slate-800 border border-slate-200 active:scale-95 transition-transform">0</button>
         <button onclick="clearPin()" class="h-14 rounded-2xl text-xs font-semibold text-slate-500 active:scale-95 transition-transform flex items-center justify-center">Smazat</button>
       </div>
@@ -293,7 +293,7 @@
           </label>
           <input id="githubTokenInput" type="password" placeholder="gho_... nebo ghp_..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
           <p class="text-[11px] text-slate-500 leading-tight">Umožňuje mobilu zapisovat přímo do privátního GitHub repozitáře, i když je tvůj Mac vypnutý!</p>
-          <button onclick="saveGitHubToken()" class="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all">Uložit token do iPhonu</button>
+          <button onclick="saveGitHubToken()" class="mt-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg active:scale-95 transition-all">Uložit token do telefonu</button>
         </div>
 
         <!-- Google Gemini API Token -->
@@ -307,7 +307,7 @@
         <!-- Zabezpečení -->
         <div class="pt-2 border-t border-slate-200 space-y-2">
           <h3 class="text-xs font-bold text-slate-700">Zabezpečení & PIN</h3>
-          <p class="text-xs text-slate-500">Výchozí PIN pro rychlé odemčení je <code class="font-mono font-bold text-indigo-600">1988</code> nebo podpora FaceID na iPhonu.</p>
+          <p class="text-xs text-slate-500">Výchozí PIN pro rychlé odemčení je <code class="font-mono font-bold text-indigo-600">1988</code> nebo podpora biometrie (otisk prstu / obličej).</p>
           <button onclick="lockApp()" class="w-full py-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl active:scale-98 transition-transform">Okamžitě zamknout aplikaci</button>
         </div>
       </div>
