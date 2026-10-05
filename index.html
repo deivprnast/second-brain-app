@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" class="h-full">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -18,7 +18,12 @@
     .pulse-record {
       animation: pulse-subtle 1.2s infinite ease-in-out;
     }
-    body {
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
@@ -36,10 +41,10 @@
     }
   </style>
 </head>
-<body class="text-slate-900 bg-slate-100 flex justify-center h-screen h-[100dvh] overflow-hidden p-0 sm:p-4">
+<body class="text-slate-900 bg-slate-100 flex justify-center h-full h-[100dvh] overflow-hidden p-0 sm:p-4">
 
   <!-- Hlavní kontejner kokpitu -->
-  <div class="w-full max-w-md bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl flex flex-col h-full relative overflow-hidden">
+  <div class="w-full max-w-md bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl flex flex-col h-full h-[100dvh] relative overflow-hidden">
 
     <!-- Zabezpečení / Lock Screen Overlay -->
     <div id="lockScreen" class="absolute inset-0 bg-white/99 backdrop-blur-md z-50 flex flex-col items-center justify-between p-6 transition-all duration-300">
@@ -107,7 +112,7 @@
     </header>
 
     <!-- Obsah tabů -->
-    <main class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5 pb-20">
+    <main class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 space-y-5 pb-8">
 
       <!-- PROMINENTNÍ BANNER PRO VLOŽENÍ TOKENU (pokud chybí) -->
       <div id="tokenSetupBanner" class="p-4 bg-indigo-50/80 border border-indigo-200 rounded-2xl space-y-2.5 shadow-sm">
@@ -338,23 +343,23 @@
 
     </main>
 
-    <!-- Spodní Navigační Lišta (Tabs) -->
-    <nav class="absolute bottom-0 left-0 right-0 bg-white/95 border-t border-slate-200/80 px-4 py-2 flex items-center justify-around backdrop-blur z-20">
-      <button onclick="switchTab('mission')" id="navBtnMission" class="flex flex-col items-center text-indigo-600 transition-colors">
+    <!-- Spodní Navigační Lišta (Tabs) - Pevně ukotvena v layoutu, trvale viditelná -->
+    <nav class="shrink-0 bg-white/98 border-t border-slate-200/90 px-3 py-2 flex items-center justify-around backdrop-blur z-30 shadow-[0_-2px_12px_rgba(0,0,0,0.05)] pb-[max(0.6rem,env(safe-area-inset-bottom))]">
+      <button onclick="switchTab('mission')" id="navBtnMission" class="flex flex-col items-center text-indigo-600 transition-colors py-1 px-3 rounded-xl active:scale-95">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-        <span class="text-[10px] font-semibold mt-0.5">Mise</span>
+        <span class="text-[10px] font-bold mt-0.5">Mise</span>
       </button>
-      <button onclick="switchTab('inbox')" id="navBtnInbox" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors">
+      <button onclick="switchTab('inbox')" id="navBtnInbox" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-        <span class="text-[10px] font-semibold mt-0.5">Inbox</span>
+        <span class="text-[10px] font-medium mt-0.5">Inbox</span>
       </button>
-      <button onclick="switchTab('ai')" id="navBtnAI" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors">
+      <button onclick="switchTab('ai')" id="navBtnAI" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-        <span class="text-[10px] font-semibold mt-0.5">AI Kouč</span>
+        <span class="text-[10px] font-medium mt-0.5">AI Kouč</span>
       </button>
-      <button onclick="switchTab('settings')" id="navBtnSettings" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors">
+      <button onclick="switchTab('settings')" id="navBtnSettings" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-        <span class="text-[10px] font-semibold mt-0.5">Cloud</span>
+        <span class="text-[10px] font-medium mt-0.5">Cloud</span>
       </button>
     </nav>
 
@@ -529,16 +534,28 @@
       tabs.forEach(t => {
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const navBtn = document.getElementById(`navBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (!content || !navBtn) return;
+        const span = navBtn.querySelector('span');
         if (t === tab) {
           content.classList.remove('hidden');
           navBtn.classList.remove('text-slate-400');
           navBtn.classList.add('text-indigo-600');
+          if (span) {
+            span.classList.remove('font-medium');
+            span.classList.add('font-bold');
+          }
         } else {
           content.classList.add('hidden');
           navBtn.classList.add('text-slate-400');
           navBtn.classList.remove('text-indigo-600');
+          if (span) {
+            span.classList.remove('font-bold');
+            span.classList.add('font-medium');
+          }
         }
       });
+      const main = document.querySelector('main');
+      if (main) main.scrollTop = 0;
     }
 
     // ==========================================
