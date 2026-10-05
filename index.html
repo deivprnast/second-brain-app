@@ -150,10 +150,26 @@
           </div>
 
           <div class="flex space-x-2">
-            <input id="quickCaptureInput" type="text" placeholder="Co máš na mysli? Např: Zavolat Michalovi..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
-            <button onclick="submitQuickCaptureHome()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs shrink-0 flex items-center space-x-1">
+            <input id="quickCaptureInput" type="text" placeholder="Co máš na mysli? Např: Vyřešit Tomáše Junka..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+            <button onclick="submitQuickCaptureHome('inbox')" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs shrink-0 flex items-center space-x-1" title="Uložit do Inboxu">
               <span>Uložit</span>
             </button>
+          </div>
+
+          <!-- Živý přepis hlasu v reálném čase -->
+          <div id="homeDictationIndicator" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-xs">
+            <div class="flex items-center justify-between text-rose-700 font-bold">
+              <div class="flex items-center space-x-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
+                <span>Přepisuji tvůj hlas v reálném čase:</span>
+              </div>
+              <button onclick="stopVoiceDictation()" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-bold active:scale-95 shadow-xs">
+                Hotovo (Zastavit) ✓
+              </button>
+            </div>
+            <div id="homeLiveTranscriptBox" class="p-2.5 bg-white border border-rose-200 rounded-lg text-slate-800 font-medium text-xs min-h-[48px] max-h-36 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner">
+              Poslouchám tvůj hlas... mluv normálně česky.
+            </div>
           </div>
 
           <div class="flex items-center space-x-2">
@@ -161,26 +177,49 @@
               <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
               <span id="homeDictationLabel">Diktovat hlasem (česky)</span>
             </button>
-            <button onclick="switchTab('inbox')" class="px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-semibold rounded-xl active:scale-95 transition-all shrink-0">
-              Celý Inbox →
+            <button onclick="submitQuickCaptureHome('task')" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold rounded-xl active:scale-95 transition-all shrink-0" title="Uložit rovnou jako aktivní úkol dne">
+              + Jako úkol
             </button>
-          </div>
-
-          <div id="homeDictationIndicator" class="hidden p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center space-x-2 text-xs text-rose-700 pulse-record">
-            <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
-            <span class="font-medium">Poslouchám hlas a přepisuji... mluv!</span>
           </div>
         </div>
 
-        <!-- Sekce 3 Klíčových misí -->
-        <section>
-          <div class="flex items-center justify-between mb-2.5">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Pravidlo 3 priorit dne (Fokus)</h2>
-            <span id="completedCounter" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">0/3 splněno</span>
+        <!-- Sekce Úkoly a Priority -->
+        <section class="space-y-3">
+          <div class="flex items-center justify-between mb-1">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">🎯 Priority & Úkoly dne</h2>
+            <span id="completedCounter" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">0/0 splněno</span>
           </div>
 
-          <div id="tasksList" class="space-y-2.5">
-            <!-- Dynamicky generované úkoly -->
+          <!-- K řešení -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-1">
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1.5">
+                <span>📋 K řešení</span>
+                <span id="activeCountBadge" class="text-[10px] font-bold px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded-full border border-amber-200">0</span>
+              </span>
+              <span class="text-[10px] text-slate-400">Zaškrtnutím přesuneš do Hotovo</span>
+            </div>
+            <div id="activeTasksList" class="space-y-2">
+              <!-- Dynamicky generované úkoly k řešení -->
+            </div>
+          </div>
+
+          <!-- Hotovo (Složka s možností znovuotevření) -->
+          <div class="pt-1">
+            <button onclick="toggleCompletedFolder()" class="w-full flex items-center justify-between p-2.5 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-all active:scale-98 shadow-2xs">
+              <div class="flex items-center space-x-2">
+                <span class="text-emerald-600">✅</span>
+                <span>Složka Hotovo</span>
+                <span id="completedCountBadge" class="text-[10px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">0</span>
+              </div>
+              <div class="flex items-center space-x-1 text-[11px] text-slate-500 font-normal">
+                <span>Znovuotevřít</span>
+                <span id="completedFolderArrow" class="font-bold text-slate-600 transition-transform">▾</span>
+              </div>
+            </button>
+            <div id="completedTasksList" class="mt-2 space-y-2">
+              <!-- Dynamicky generované hotové úkoly -->
+            </div>
           </div>
         </section>
 
@@ -422,27 +461,45 @@
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.lang = 'cs-CZ';
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
+        let finalStr = '';
+        let interimStr = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalStr += event.results[i][0].transcript + ' ';
+          } else {
+            interimStr += event.results[i][0].transcript;
+          }
+        }
+        const fullTranscript = (finalStr + interimStr).trim();
+
         let targetId = 'inboxInput';
         if (activeDictationTarget === 'home') targetId = 'quickCaptureInput';
         else if (activeDictationTarget === 'chat') targetId = 'aiChatInput';
+
         const input = document.getElementById(targetId);
-        if (input) {
-          input.value = input.value ? input.value + " " + transcript : transcript;
+        if (input && fullTranscript) {
+          input.value = fullTranscript;
         }
-        stopVoiceDictation();
+
+        const liveBox = document.getElementById('homeLiveTranscriptBox');
+        if (liveBox && activeDictationTarget === 'home' && fullTranscript) {
+          liveBox.innerText = fullTranscript;
+        }
       };
 
       recognition.onerror = (e) => {
         console.warn("Speech recognition error:", e);
-        stopVoiceDictation();
       };
-      recognition.onend = () => { stopVoiceDictation(); };
+      recognition.onend = () => {
+        if (isDictating) {
+          try { recognition.start(); } catch(e){}
+        }
+      };
     }
 
     // Audio recording
@@ -608,42 +665,70 @@
     }
 
     // ==========================================
-    // PARSER & DATA ENGINE
+    // PARSER & DATA ENGINE (DYNAMICKÝ SSOT)
     // ==========================================
+    let allParsedTasks = [];
+    let isCompletedFolderOpen = true;
+
+    function toggleCompletedFolder() {
+      isCompletedFolderOpen = !isCompletedFolderOpen;
+      const list = document.getElementById('completedTasksList');
+      const arrow = document.getElementById('completedFolderArrow');
+      if (list) {
+        if (isCompletedFolderOpen) {
+          list.classList.remove('hidden');
+          if (arrow) arrow.innerText = '▾';
+        } else {
+          list.classList.add('hidden');
+          if (arrow) arrow.innerText = '▸';
+        }
+      }
+    }
+
     function parseMarkdown(md) {
       currentRawMarkdown = md;
 
-      const tasks = [
-        {
-          id: "task_baluo",
-          tag: "BALUO • P0",
-          badgeClass: "bg-rose-100 text-rose-800 border-rose-200",
-          bgCard: "bg-rose-50/50 border-rose-200",
-          title: "Zpracovat data z měření (4 klienti z min. týdne)",
-          subtitle: "Čistý fokus blok 08:30–11:30. Odbavit reporty klientům.",
-          completed: false
-        },
-        {
-          id: "task_startitup",
-          tag: "STARTITUP • P1",
-          badgeClass: "bg-blue-100 text-blue-800 border-blue-200",
-          bgCard: "bg-blue-50/50 border-blue-200",
-          title: "Call se Zbyňou: Obchod + offboarding Burdy",
-          subtitle: "Zbyňa přebírá obchod. Podmínka: Jirka musí čistě spustit web Atomika.",
-          completed: false
-        },
-        {
-          id: "task_sport",
-          tag: "OSOBNÍ • SPORT",
-          badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
-          bgCard: "bg-emerald-50/50 border-emerald-200",
-          title: "Fitness AC Baluo s Pájou Mrnuštíkem",
-          subtitle: "16:30–17:30 (zatímco je Andrejka na lekci Svišťů). Nedotknutelný slot.",
-          completed: false
-        }
-      ];
+      // 1. Parse Časová osa dne (Bojový plán - Markdown tabulka)
+      const timeline = [];
+      const tableMatch = md.match(/## ⚡ BOJOVÝ PLÁN.*?\n([\s\S]*?)(?=\n---|\n## |\Z)/);
+      if (tableMatch) {
+        const lines = tableMatch[1].trim().split('\n');
+        lines.forEach((line, idx) => {
+          line = line.trim();
+          if (!line.startsWith('|') || line.includes(':---') || line.toLowerCase().includes('časový blok')) return;
+          const cols = line.split('|').map(c => c.trim()).filter(c => c !== '');
+          if (cols.length >= 3) {
+            const time = cols[0].replace(/\*\*/g, '').trim();
+            const prio = cols[1].replace(/\*\*/g, '').trim();
+            const title = cols[2].replace(/\*\*/g, '').replace(/\\to/g, '→').trim();
+            const desc = cols.length >= 4 ? cols[3].replace(/\*\*/g, '').trim() : '';
+            const status = cols.length >= 5 ? cols[4].replace(/\*\*/g, '').trim() : '';
 
-      // Parse Inbox z markdownu
+            const isDone = status.includes('HOTOVO') || status.includes('✅');
+            const isCurrent = status.includes('TEĎ') || status.includes('FINIŠ') || status.includes('🎯') || status.includes('⏳');
+
+            let bgClass = "bg-white border-slate-200";
+            if (isDone) bgClass = "bg-slate-50/70 border-slate-200 opacity-60";
+            else if (isCurrent) bgClass = "bg-rose-50/70 border-rose-200 ring-1 ring-rose-300";
+            else if (prio.includes('P1') || prio.includes('Strategie')) bgClass = "bg-indigo-50/40 border-indigo-200";
+            else if (prio.includes('P3') || prio.includes('OSOBNÍ')) bgClass = "bg-emerald-50/40 border-emerald-200";
+
+            timeline.push({
+              rawLine: line,
+              time: time,
+              prio: prio,
+              title: title,
+              desc: desc,
+              status: status,
+              completed: isDone,
+              isCurrent: isCurrent,
+              bg: bgClass
+            });
+          }
+        });
+      }
+
+      // 2. Parse Inbox & Mobilní zápisy z markdownu
       const inbox = [];
       const inboxMatch = md.match(/## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU.*?\n([\s\S]*?)(?=\n---|\n## |\Z)/);
       if (inboxMatch) {
@@ -653,18 +738,94 @@
           if (line.startsWith("- [")) {
             const isDone = line.startsWith("- [x]");
             const text = line.replace(/^- \[[ x]\]\s*/, '');
-            inbox.push({ id: `inbox_${i}`, text: text, completed: isDone });
+            inbox.push({ id: `inbox_${i}`, rawLine: line, text: text, completed: isDone });
           }
         });
       }
 
-      const timeline = [
-        { time: "08:30–11:30", prio: "🔴 P0 Fokus", title: "Zpracování klientských dat (Baluo)", desc: "Nepřerušený 3h fokus na 4 reporty.", bg: "bg-rose-50/40 border-rose-200" },
-        { time: "11:30–12:30", prio: "🟢 Pauza", title: "Oběd a reset hlavy", desc: "Doplnit energii před odpolednem.", bg: "bg-white border-slate-200" },
-        { time: "12:30–14:30", prio: "👑 P1 Strategie", title: "Příprava prezentace pro Děkana Hápa", desc: "AC FTK, procesy a smluvní výzkum (FAČR, Havlín).", bg: "bg-blue-50/30 border-blue-200" },
-        { time: "14:30–15:30", prio: "🔬 P2 Ph.D.", title: "ClinicalTrials & Kurz analytika", desc: "Kontrola registrace studie + MS Forms.", bg: "bg-white border-slate-200" },
-        { time: "16:30–17:30", prio: "🏋️ P3 Osobní", title: "Fitness AC Baluo s Pájou", desc: "Andrejka má Sviště v tělocvičně.", bg: "bg-emerald-50/50 border-emerald-200" }
-      ];
+      // 3. Sestavení sjednoceného seznamu všech úkolů (z Rozvrhu i Inboxu)
+      const tasks = [];
+
+      // A) Úkoly z časového rozvrhu (vyjma pauzy a regenerace)
+      timeline.forEach((item, idx) => {
+        const titleLower = item.title.toLowerCase();
+        if (titleLower.includes('oběd') || titleLower.includes('pauza') || titleLower.includes('regenerace')) return;
+        
+        let tag = "BALUO • P0";
+        let badgeClass = "bg-rose-100 text-rose-800 border-rose-200";
+        let bgCard = "bg-rose-50/30 border-rose-200";
+
+        if (item.prio.includes("P1") || item.title.includes("Háp")) {
+          tag = "STRATEGIE • P1";
+          badgeClass = "bg-indigo-100 text-indigo-800 border-indigo-200";
+          bgCard = "bg-indigo-50/30 border-indigo-200";
+        } else if (item.prio.includes("P2") || item.title.includes("Junek")) {
+          tag = "OPERATIVA • P2";
+          badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
+          bgCard = "bg-amber-50/30 border-amber-200";
+        } else if (item.prio.includes("P3") || item.title.includes("Fitness")) {
+          tag = "OSOBNÍ • SPORT";
+          badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
+          bgCard = "bg-emerald-50/30 border-emerald-200";
+        } else if (item.title.includes("Zbyň")) {
+          tag = "STARTITUP • P1";
+          badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+          bgCard = "bg-blue-50/30 border-blue-200";
+        }
+
+        tasks.push({
+          id: `tl_task_${idx}`,
+          type: 'table',
+          rawLine: item.rawLine,
+          time: item.time,
+          tag: tag,
+          badgeClass: badgeClass,
+          bgCard: bgCard,
+          title: item.title,
+          subtitle: `${item.time} • ${item.desc || item.status}`,
+          completed: item.completed
+        });
+      });
+
+      // B) Úkoly z Inboxu
+      inbox.forEach((item, idx) => {
+        let tag = "INBOX";
+        let badgeClass = "bg-slate-100 text-slate-800 border-slate-200";
+        let bgCard = "bg-white border-slate-200";
+
+        if (item.text.includes("Junek") || item.text.includes("Tomáš")) {
+          tag = "OPERATIVA • P2";
+          badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
+          bgCard = "bg-amber-50/40 border-amber-200";
+        } else if (item.text.includes("FAČR")) {
+          tag = "FAČR • VÝZKUM";
+          badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+          bgCard = "bg-blue-50/40 border-blue-200";
+        } else if (item.text.includes("Gamifiter")) {
+          tag = "GAMIFITER • P2";
+          badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
+          bgCard = "bg-emerald-50/40 border-emerald-200";
+        }
+
+        // Zkrátit titulek pro čisté zobrazení
+        let cleanTitle = item.text.replace(/^\*\*\[.*?\]\:\*\*\s*/, '');
+        if (!cleanTitle) cleanTitle = item.text;
+
+        tasks.push({
+          id: `ib_task_${idx}`,
+          type: 'inbox',
+          rawLine: item.rawLine,
+          time: "",
+          tag: tag,
+          badgeClass: badgeClass,
+          bgCard: bgCard,
+          title: cleanTitle,
+          subtitle: item.completed ? "Dokončeno" : "K vyřešení dnes",
+          completed: item.completed
+        });
+      });
+
+      allParsedTasks = tasks;
 
       const radar = [
         { day: "Úterý 12:00", title: "Odeslání e-mailu Hůlkovi", desc: "Dořešení IGA se Zdeňkem Dygrýnem.", highlight: false },
@@ -744,94 +905,231 @@
     function renderUI(data) {
       if (data.date) document.getElementById('headerDate').innerText = data.date;
 
-      // Vykreslit úkoly
-      const tasksContainer = document.getElementById('tasksList');
-      tasksContainer.innerHTML = '';
-      completedCount = 0;
+      // Vykreslit rozdělené úkoly (K řešení vs Hotovo)
+      renderTasksLists(allParsedTasks);
 
-      data.tasks.forEach(t => {
-        if (t.completed) completedCount++;
-        const card = document.createElement('div');
-        card.id = t.id;
-        card.className = `p-3.5 rounded-2xl border ${t.bgCard || 'bg-slate-50 border-slate-200'} transition-all ${t.completed ? 'opacity-40 line-through' : ''}`;
-        card.innerHTML = `
-          <div class="flex items-start justify-between">
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${t.badgeClass}">${t.tag}</span>
-            <input type="checkbox" onchange="toggleTask('${t.id}')" ${t.completed ? 'checked' : ''} class="w-5 h-5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-          </div>
-          <h3 class="text-xs font-bold text-slate-900 mt-2">${t.title}</h3>
-          <p class="text-[11px] text-slate-500 mt-0.5">${t.subtitle}</p>
-        `;
-        tasksContainer.appendChild(card);
-      });
-      document.getElementById('completedCounter').innerText = `${completedCount}/${data.tasks.length} splněno`;
-
-      // Vykreslit časovou osu
+      // Vykreslit časovou osu dne
       const timelineContainer = document.getElementById('timelineList');
-      timelineContainer.innerHTML = '';
-      data.timeline.forEach(item => {
-        const el = document.createElement('div');
-        el.className = `p-3 rounded-xl border ${item.bg} flex items-start space-x-3`;
-        el.innerHTML = `
-          <span class="text-xs font-mono font-bold text-slate-700 shrink-0 w-24">${item.time}</span>
-          <div class="flex-1">
-            <p class="text-xs font-bold text-slate-900">${item.title}</p>
-            <p class="text-[11px] text-slate-500">${item.desc}</p>
-          </div>
-        `;
-        timelineContainer.appendChild(el);
-      });
+      if (timelineContainer && data.timeline) {
+        timelineContainer.innerHTML = '';
+        data.timeline.forEach(item => {
+          const el = document.createElement('div');
+          el.className = `p-3 rounded-xl border ${item.bg} flex items-start space-x-3 transition-all`;
+          el.innerHTML = `
+            <div class="shrink-0 w-24">
+              <span class="text-xs font-mono font-bold text-slate-800 block">${item.time}</span>
+              <span class="text-[9px] font-bold uppercase tracking-tight text-slate-500 block mt-0.5">${item.status || item.prio}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold text-slate-900 leading-snug break-words">${item.title}</p>
+              ${item.desc ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words">${item.desc}</p>` : ''}
+            </div>
+          `;
+          timelineContainer.appendChild(el);
+        });
+      }
 
       // Vykreslit radar
       const radarContainer = document.getElementById('radarList');
-      radarContainer.innerHTML = '';
-      data.radar.forEach(r => {
-        const col = document.createElement('div');
-        col.className = `p-2.5 rounded-xl border text-xs ${r.highlight ? 'bg-indigo-50/70 border-indigo-200' : 'bg-slate-50 border-slate-200'}`;
-        col.innerHTML = `
-          <span class="text-[10px] font-bold uppercase ${r.highlight ? 'text-indigo-700' : 'text-slate-500'}">${r.day}</span>
-          <p class="font-bold ${r.highlight ? 'text-indigo-900' : 'text-slate-900'} mt-1 truncate">${r.title}</p>
-          <p class="text-[11px] ${r.highlight ? 'text-indigo-700' : 'text-slate-500'} line-clamp-2 mt-0.5">${r.desc}</p>
-        `;
-        radarContainer.appendChild(col);
-      });
-
-      // Vykreslit Inbox
-      const inboxList = document.getElementById('inboxItemsList');
-      inboxList.innerHTML = '';
-      if (data.inbox && data.inbox.length > 0) {
-        data.inbox.forEach(item => {
-          const div = document.createElement('div');
-          div.className = `p-3 bg-white border border-slate-200 rounded-xl text-xs flex items-start space-x-2 ${item.completed ? 'opacity-40 line-through' : ''}`;
-          div.innerHTML = `
-            <span class="text-indigo-600 mt-0.5">📌</span>
-            <span class="text-slate-800 leading-snug">${item.text}</span>
+      if (radarContainer && data.radar) {
+        radarContainer.innerHTML = '';
+        data.radar.forEach(r => {
+          const col = document.createElement('div');
+          col.className = `p-2.5 rounded-xl border text-xs ${r.highlight ? 'bg-indigo-50/70 border-indigo-200' : 'bg-slate-50 border-slate-200'}`;
+          col.innerHTML = `
+            <span class="text-[10px] font-bold uppercase ${r.highlight ? 'text-indigo-700' : 'text-slate-500'}">${r.day}</span>
+            <p class="font-bold ${r.highlight ? 'text-indigo-900' : 'text-slate-900'} mt-1 truncate">${r.title}</p>
+            <p class="text-[11px] ${r.highlight ? 'text-indigo-700' : 'text-slate-500'} line-clamp-2 mt-0.5">${r.desc}</p>
           `;
-          inboxList.appendChild(div);
+          radarContainer.appendChild(col);
         });
-      } else {
-        inboxList.innerHTML = `<div class="p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-400 italic">Inbox je čistý. Žádné nevyřízené poznámky.</div>`;
+      }
+
+      // Vykreslit Inbox na záložce 2
+      const inboxList = document.getElementById('inboxItemsList');
+      if (inboxList && data.inbox) {
+        inboxList.innerHTML = '';
+        if (data.inbox.length > 0) {
+          data.inbox.forEach(item => {
+            const div = document.createElement('div');
+            div.className = `p-3 bg-white border border-slate-200 rounded-xl text-xs flex items-start space-x-2 ${item.completed ? 'opacity-40 line-through' : ''}`;
+            div.innerHTML = `
+              <span class="text-indigo-600 mt-0.5">📌</span>
+              <span class="text-slate-800 leading-snug break-words flex-1">${item.text}</span>
+            `;
+            inboxList.appendChild(div);
+          });
+        } else {
+          inboxList.innerHTML = `<div class="p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-400 italic">Inbox je čistý. Žádné nevyřízené poznámky.</div>`;
+        }
       }
     }
 
-    async function toggleTask(taskId) {
-      const el = document.getElementById(taskId);
-      const isChecked = el.querySelector('input').checked;
-      if (isChecked) {
-        el.classList.add('opacity-40', 'line-through');
-        completedCount++;
-      } else {
-        el.classList.remove('opacity-40', 'line-through');
-        completedCount--;
-      }
-      document.getElementById('completedCounter').innerText = `${completedCount}/3 splněno`;
+    function renderTasksLists(tasks) {
+      const activeContainer = document.getElementById('activeTasksList');
+      const completedContainer = document.getElementById('completedTasksList');
+      if (!activeContainer || !completedContainer) return;
 
+      activeContainer.innerHTML = '';
+      completedContainer.innerHTML = '';
+
+      const activeTasks = [];
+      const completedTasks = [];
+
+      tasks.forEach((t, origIdx) => {
+        if (t.completed) {
+          completedTasks.push({ task: t, origIdx: origIdx });
+        } else {
+          activeTasks.push({ task: t, origIdx: origIdx });
+        }
+      });
+
+      // Aktualizace čítačů
+      const activeBadge = document.getElementById('activeCountBadge');
+      const compBadge = document.getElementById('completedCountBadge');
+      const compCounter = document.getElementById('completedCounter');
+
+      if (activeBadge) activeBadge.innerText = activeTasks.length;
+      if (compBadge) compBadge.innerText = completedTasks.length;
+      if (compCounter) compCounter.innerText = `${completedTasks.length}/${tasks.length} splněno`;
+
+      // 1. Vykreslit Aktivní úkoly (K řešení)
+      if (activeTasks.length === 0) {
+        activeContainer.innerHTML = `
+          <div class="p-4 bg-emerald-50/60 border border-dashed border-emerald-200 rounded-2xl text-center text-xs text-emerald-800 font-medium">
+            🎉 Skvělá práce Davide! Všechny naplánované úkoly jsou hotové.
+          </div>
+        `;
+      } else {
+        activeTasks.forEach(({ task: t, origIdx }) => {
+          const card = document.createElement('div');
+          card.className = `p-3.5 rounded-2xl border ${t.bgCard || 'bg-white border-slate-200'} shadow-2xs flex items-start justify-between space-x-2.5 transition-all`;
+          card.innerHTML = `
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border ${t.badgeClass}">${t.tag}</span>
+                ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
+              </div>
+              <h3 class="text-xs font-bold text-slate-900 leading-snug break-words">${t.title}</h3>
+              ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-2">${t.subtitle}</p>` : ''}
+            </div>
+            <input type="checkbox" onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+          `;
+          activeContainer.appendChild(card);
+        });
+      }
+
+      // 2. Vykreslit Hotové úkoly (Složka Hotovo)
+      if (completedTasks.length === 0) {
+        completedContainer.innerHTML = `
+          <div class="p-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs text-slate-400 italic text-center">
+            Zatím žádné splněné úkoly.
+          </div>
+        `;
+      } else {
+        completedTasks.forEach(({ task: t, origIdx }) => {
+          const card = document.createElement('div');
+          card.className = `p-3 rounded-2xl border bg-slate-50/80 border-slate-200 shadow-2xs flex items-start justify-between space-x-2.5 transition-all opacity-60`;
+          card.innerHTML = `
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border border-slate-300 bg-slate-200/60 text-slate-600">${t.tag}</span>
+                ${t.time ? `<span class="text-[10px] font-mono text-slate-400 font-bold">${t.time}</span>` : ''}
+              </div>
+              <h3 class="text-xs font-bold text-slate-500 line-through leading-snug break-words">${t.title}</h3>
+              <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">✓ Splněno (odškrtnutím znovuotevřeš)</p>
+            </div>
+            <input type="checkbox" checked onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+          `;
+          completedContainer.appendChild(card);
+        });
+      }
+    }
+
+    async function toggleTask(taskIndex, isChecked) {
+      const task = allParsedTasks[taskIndex];
+      if (!task) return;
+
+      task.completed = isChecked;
+
+      // 1. Změna v markdownu
+      if (task.type === 'inbox' && task.rawLine) {
+        const oldLine = task.rawLine;
+        const newLine = oldLine.replace(/^- \[[ x]\]/, isChecked ? '- [x]' : '- [ ]');
+        if (currentRawMarkdown.includes(oldLine)) {
+          currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+          task.rawLine = newLine;
+        }
+      } else if (task.type === 'table' && task.rawLine) {
+        const oldLine = task.rawLine;
+        let newLine = oldLine;
+        if (isChecked) {
+          newLine = oldLine.replace(/\|\s*(?:⏳|📅|🎯|🔴|🟡|🟢|👑)[^|]*\|\s*$/, '| ✅ **HOTOVO** |');
+          if (newLine === oldLine) {
+            newLine = oldLine.replace(/\|\s*[^|]*\|\s*$/, '| ✅ **HOTOVO** |');
+          }
+        } else {
+          newLine = oldLine.replace(/\|\s*✅\s*\*\*HOTOVO\*\*\s*\|\s*$/, '| ⏳ **TEĎ** |');
+          if (newLine === oldLine) {
+            newLine = oldLine.replace(/\|\s*[^|]*\|\s*$/, '| ⏳ **TEĎ** |');
+          }
+        }
+        if (currentRawMarkdown.includes(oldLine)) {
+          currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+          task.rawLine = newLine;
+        }
+      }
+
+      // 2. Blesková aktualizace UI bez čekání
+      renderTasksLists(allParsedTasks);
+
+      // 3. Trvalé uložení do Cloudu na GitHub
+      const titleSummary = (task.title || "").slice(0, 30);
+      await saveMarkdownToCloud(
+        currentRawMarkdown,
+        `feat(tasks): ${isChecked ? 'Hotovo' : 'Znovuotevřeno'} - ${titleSummary}`
+      );
+    }
+
+    async function saveMarkdownToCloud(updatedMd, commitMsg) {
+      const ghToken = localStorage.getItem('github_token') || "";
+
+      // 1. Lokální Mac server
       if (activeSyncMode === 'local') {
         fetch('/api/toggle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ task: taskId, completed: isChecked })
+          body: JSON.stringify({ markdown: updatedMd })
         }).catch(() => {});
+        return;
+      }
+
+      // 2. Cloud 24/7 GitHub Direct
+      if (ghToken) {
+        try {
+          const encoded = btoa(unescape(encodeURIComponent(updatedMd)));
+          const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${ghToken}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: commitMsg || "feat(tasks): Aktualizace stavu úkolu z Androidu",
+              content: encoded,
+              sha: currentGitHubSha
+            })
+          });
+
+          if (putRes.ok) {
+            const putJson = await putRes.json();
+            currentGitHubSha = putJson.content.sha;
+            currentRawMarkdown = updatedMd;
+          }
+        } catch (err) {
+          console.error("Chyba při přímém ukládání na GitHub:", err);
+        }
       }
     }
 
@@ -866,6 +1164,8 @@
           if (isHome) {
             const lbl = document.getElementById('homeDictationLabel');
             if (lbl) lbl.innerText = "Poslouchám... klepni pro stop";
+            const liveBox = document.getElementById('homeLiveTranscriptBox');
+            if (liveBox) liveBox.innerText = "Poslouchám tvůj hlas... mluv!";
           }
         }
         if (recognition) {
@@ -901,14 +1201,16 @@
       }
     }
 
-    async function submitQuickCaptureHome() {
+    async function submitQuickCaptureHome(mode = 'inbox') {
       const input = document.getElementById('quickCaptureInput');
       const val = input.value.trim();
       if (!val) {
         alert("Nejprve zadej poznámku nebo nadiktuj hlasem.");
         return;
       }
-      await submitThoughtDirect(val);
+      stopVoiceDictation();
+      const isTask = mode === 'task' || val.toLowerCase().startsWith('úkol') || val.toLowerCase().startsWith('vyřešit');
+      await submitThoughtDirect(val, isTask);
       input.value = "";
     }
 
@@ -916,11 +1218,12 @@
       const input = document.getElementById('inboxInput');
       const text = input.value.trim();
       if (!text) return;
-      await submitThoughtDirect(text);
+      stopVoiceDictation();
+      await submitThoughtDirect(text, false);
       input.value = "";
     }
 
-    async function submitThoughtDirect(thought) {
+    async function submitThoughtDirect(thought, isTask = false) {
       const ghToken = localStorage.getItem('github_token') || "";
       const nowStr = new Date().toLocaleDateString('cs-CZ') + " " + new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 
@@ -943,22 +1246,23 @@
       // 2. Cloud GitHub API
       if (ghToken) {
         try {
-          // Pokud nemáme SHA nebo markdown, nejprve načteme aktuální soubor
-          if (!currentGitHubSha || !currentRawMarkdown) {
-            const ghRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
-              headers: {
-                'Authorization': `Bearer ${ghToken}`,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            if (ghRes.ok) {
-              const fileData = await ghRes.json();
-              currentGitHubSha = fileData.sha;
-              currentRawMarkdown = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+          // Pokud nemáme SHA nebo markdown, načteme aktuální soubor
+          const ghRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+            headers: {
+              'Authorization': `Bearer ${ghToken}`,
+              'Accept': 'application/vnd.github.v3+json'
             }
+          });
+          if (ghRes.ok) {
+            const fileData = await ghRes.json();
+            currentGitHubSha = fileData.sha;
+            currentRawMarkdown = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
           }
 
-          const entry = `- [ ] **[MOBILNÍ ZÁPIS ${nowStr}]:** ${thought}\n`;
+          const entry = isTask 
+            ? `- [ ] **[P2 - OPERATIVA]:** ${thought} (zadáno z mobilu ${nowStr})\n`
+            : `- [ ] **[MOBILNÍ ZÁPIS ${nowStr}]:** ${thought}\n`;
+
           let updatedMd = currentRawMarkdown || "# 🎯 CENTRÁLA PRIORIT & OPERATIVNÍ ŘÍZENÍ (DAVID PRYCL)\n\n## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
           const inboxHeader = "## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
           
@@ -978,7 +1282,7 @@
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              message: `feat(inbox): Mobilní záchyt myšlenky z Androidu (${nowStr})`,
+              message: `feat(inbox): ${isTask ? 'Nový úkol' : 'Zápis'} z Androidu (${nowStr})`,
               content: encoded,
               sha: currentGitHubSha
             })
@@ -988,8 +1292,9 @@
             const putJson = await putRes.json();
             currentGitHubSha = putJson.content.sha;
             currentRawMarkdown = updatedMd;
-            fetchData();
-            alert("✅ Poznámka uložena přímo do tvého Druhého mozku v Cloudu!");
+            const parsedData = parseMarkdown(updatedMd);
+            renderUI(parsedData);
+            alert(`✅ ${isTask ? 'Úkol přidán do K řešení' : 'Poznámka uložena do Inboxu'}!`);
             return;
           } else {
             const errJson = await putRes.json();
