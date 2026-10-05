@@ -678,7 +678,7 @@
 
       // 1. Parse Časová osa dne (Bojový plán - Markdown tabulka)
       const timeline = [];
-      const tableMatch = md.match(/## ⚡ BOJOVÝ PLÁN.*?\n([\s\S]*?)(?=\n---|\n## |\Z)/);
+      const tableMatch = md.match(/## ⚡ BOJOVÝ PLÁN.*?\n([\s\S]*?)(?=\n---|\n## |$)/);
       if (tableMatch) {
         const lines = tableMatch[1].trim().split('\n');
         lines.forEach((line, idx) => {
@@ -692,7 +692,7 @@
             const desc = cols.length >= 4 ? cols[3].replace(/\*\*/g, '').trim() : '';
             const status = cols.length >= 5 ? cols[4].replace(/\*\*/g, '').trim() : '';
 
-            const isDone = status.includes('HOTOVO') || status.includes('✅');
+            const isDone = status.includes('HOTOVO') || status.includes('✅') || line.includes('✅');
             const isCurrent = status.includes('TEĎ') || status.includes('FINIŠ') || status.includes('🎯') || status.includes('⏳');
 
             let bgClass = "bg-white border-slate-200";
@@ -718,7 +718,7 @@
 
       // 2. Parse Inbox & Mobilní zápisy z markdownu
       const inbox = [];
-      const inboxMatch = md.match(/## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU.*?\n([\s\S]*?)(?=\n---|\n## |\Z)/);
+      const inboxMatch = md.match(/## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU.*?\n([\s\S]*?)(?=\n---|\n## |$)/);
       if (inboxMatch) {
         const lines = inboxMatch[1].trim().split('\n');
         lines.forEach((line, i) => {
@@ -755,7 +755,7 @@
           tag = "OSOBNÍ • SPORT";
           badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
           bgCard = "bg-emerald-50/30 border-emerald-200";
-        } else if (item.title.includes("Zbyň")) {
+        } else if (item.title.includes("Zbyň") || item.prio.includes("Strategie")) {
           tag = "STARTITUP • P1";
           badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
           bgCard = "bg-blue-50/30 border-blue-200";
@@ -770,7 +770,9 @@
           badgeClass: badgeClass,
           bgCard: bgCard,
           title: item.title,
-          subtitle: `${item.time} • ${item.desc || item.status}`,
+          subtitle: `${item.time}${item.desc ? ' • ' + item.desc : ''}`,
+          hasDetail: Boolean(item.desc || item.status),
+          fullDetail: `🎯 Cíl výstupu:\n${item.desc || 'Bez podrobností'}\n\n⏱️ Stav v rozvrhu:\n${item.status || 'Naplánováno'}`,
           completed: item.completed
         });
       });
@@ -781,34 +783,69 @@
         let badgeClass = "bg-slate-100 text-slate-800 border-slate-200";
         let bgCard = "bg-white border-slate-200";
 
-        if (item.text.includes("Junek") || item.text.includes("Tomáš")) {
+        // Vytáhnout detailní přepis a komentáře <!-- detail: ... -->
+        let fullDetail = "";
+        const detailMatch = item.rawLine.match(/<!-- detail:\s*([\s\S]*?)\s*-->/);
+        if (detailMatch) {
+          fullDetail = detailMatch[1].replace(/\|\s*raw:\s*/, '\n\n🎙️ Přepis hlasovky: ');
+        } else {
+          fullDetail = item.text;
+        }
+
+        // Očistit text od HTML komentářů
+        const cleanLine = item.text.replace(/<!--[\s\S]*?-->/g, '').trim();
+
+        // Extrahovat tag z **[...]**
+        let cleanTitle = cleanLine;
+        const tagMatch = cleanLine.match(/^\*\*\[(.*?)\]\:\*\*/);
+        if (tagMatch) {
+          tag = tagMatch[1];
+          cleanTitle = cleanLine.replace(/^\*\*\[(.*?)\]\:\*\*\s*/, '').trim();
+        }
+
+        // Extrahovat časový slot pokud existuje
+        let timeStr = "";
+        const timeMatch = cleanTitle.match(/(?:⏱️|\(⏱️|\(Termín\:|\(zadáno z mobilu)\s*([^\)]+)\)?/);
+        if (timeMatch) {
+          timeStr = timeMatch[1].replace(/^⏱️\s*/, '').trim();
+        }
+
+        if (tag.includes("P0") || tag.includes("BALUO")) {
+          badgeClass = "bg-rose-100 text-rose-800 border-rose-200";
+          bgCard = "bg-rose-50/40 border-rose-200";
+        } else if (tag.includes("P1") || tag.includes("STRATEGIE")) {
+          badgeClass = "bg-indigo-100 text-indigo-800 border-indigo-200";
+          bgCard = "bg-indigo-50/40 border-indigo-200";
+        } else if (tag.includes("P2") || tag.includes("OPERATIVA") || tag.includes("Junek")) {
           tag = "OPERATIVA • P2";
           badgeClass = "bg-amber-100 text-amber-800 border-amber-200";
           bgCard = "bg-amber-50/40 border-amber-200";
-        } else if (item.text.includes("FAČR")) {
-          tag = "FAČR • VÝZKUM";
-          badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
-          bgCard = "bg-blue-50/40 border-blue-200";
-        } else if (item.text.includes("Gamifiter")) {
-          tag = "GAMIFITER • P2";
+        } else if (tag.includes("SPORT") || tag.includes("OSOBNÍ")) {
           badgeClass = "bg-emerald-100 text-emerald-800 border-emerald-200";
           bgCard = "bg-emerald-50/40 border-emerald-200";
+        } else if (tag.includes("FAČR")) {
+          badgeClass = "bg-blue-100 text-blue-800 border-blue-200";
+          bgCard = "bg-blue-50/40 border-blue-200";
         }
 
-        // Zkrátit titulek pro čisté zobrazení
-        let cleanTitle = item.text.replace(/^\*\*\[.*?\]\:\*\*\s*/, '');
-        if (!cleanTitle) cleanTitle = item.text;
+        const displayTitle = cleanTitle
+          .replace(/\s*\(⏱️[^\)]+\)/g, '')
+          .replace(/\s*\(zadáno hlasem z mobilu[^\)]+\)/g, '')
+          .replace(/\s*\(zadáno z mobilu[^\)]+\)/g, '')
+          .trim();
 
         tasks.push({
           id: `ib_task_${idx}`,
           type: 'inbox',
           rawLine: item.rawLine,
-          time: "",
+          time: timeStr,
           tag: tag,
           badgeClass: badgeClass,
           bgCard: bgCard,
-          title: cleanTitle,
-          subtitle: item.completed ? "Dokončeno" : "K vyřešení dnes",
+          title: displayTitle || cleanTitle,
+          subtitle: timeStr ? `⏱️ ${timeStr}` : (item.completed ? "Dokončeno" : "K vyřešení dnes"),
+          hasDetail: true,
+          fullDetail: fullDetail,
           completed: item.completed
         });
       });
@@ -991,17 +1028,33 @@
       } else {
         activeTasks.forEach(({ task: t, origIdx }) => {
           const card = document.createElement('div');
-          card.className = `p-3.5 rounded-2xl border ${t.bgCard || 'bg-white border-slate-200'} shadow-2xs flex items-start justify-between space-x-2.5 transition-all`;
+          card.className = `p-3.5 rounded-2xl border ${t.bgCard || 'bg-white border-slate-200'} shadow-2xs transition-all cursor-pointer select-none active:scale-[0.99]`;
+          card.onclick = () => toggleTaskDetail(t.id);
           card.innerHTML = `
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border ${t.badgeClass}">${t.tag}</span>
-                ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
+            <div class="flex items-start justify-between space-x-2.5">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border ${t.badgeClass}">${t.tag}</span>
+                  ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
+                  <span class="text-[9px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">🔍 Detail</span>
+                </div>
+                <h3 class="text-xs font-bold text-slate-900 leading-snug break-words">${t.title}</h3>
+                ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-1">${t.subtitle}</p>` : ''}
               </div>
-              <h3 class="text-xs font-bold text-slate-900 leading-snug break-words">${t.title}</h3>
-              ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-2">${t.subtitle}</p>` : ''}
+              <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
             </div>
-            <input type="checkbox" onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+
+            <!-- Rozklikávací detailní karta (Apple Reminders styl) -->
+            <div id="detail_${t.id}" class="hidden mt-3 pt-2.5 border-t border-slate-200/80 text-xs text-slate-700 space-y-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">📋 Detailní zadání & Hlasový přepis:</span>
+                <div class="text-[11px] text-slate-700 bg-slate-50/90 p-2.5 rounded-xl border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap">${t.fullDetail || t.title}</div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                <span>⏱️ Plánovaný slot: <b>${t.time || 'Dnes'}</b></span>
+                <span class="text-[10px] font-medium text-indigo-600 font-mono">${t.type === 'table' ? 'Rozvrh dne' : 'Inbox'}</span>
+              </div>
+            </div>
           `;
           activeContainer.appendChild(card);
         });
@@ -1017,20 +1070,37 @@
       } else {
         completedTasks.forEach(({ task: t, origIdx }) => {
           const card = document.createElement('div');
-          card.className = `p-3 rounded-2xl border bg-slate-50/80 border-slate-200 shadow-2xs flex items-start justify-between space-x-2.5 transition-all opacity-60`;
+          card.className = `p-3 rounded-2xl border bg-slate-50/80 border-slate-200 shadow-2xs transition-all opacity-60 cursor-pointer select-none`;
+          card.onclick = () => toggleTaskDetail(t.id);
           card.innerHTML = `
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border border-slate-300 bg-slate-200/60 text-slate-600">${t.tag}</span>
-                ${t.time ? `<span class="text-[10px] font-mono text-slate-400 font-bold">${t.time}</span>` : ''}
+            <div class="flex items-start justify-between space-x-2.5">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border border-slate-300 bg-slate-200/60 text-slate-600">${t.tag}</span>
+                  ${t.time ? `<span class="text-[10px] font-mono text-slate-400 font-bold">${t.time}</span>` : ''}
+                </div>
+                <h3 class="text-xs font-bold text-slate-500 line-through leading-snug break-words">${t.title}</h3>
+                <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">✓ Splněno (odškrtnutím znovuotevřeš)</p>
               </div>
-              <h3 class="text-xs font-bold text-slate-500 line-through leading-snug break-words">${t.title}</h3>
-              <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">✓ Splněno (odškrtnutím znovuotevřeš)</p>
+              <input type="checkbox" checked onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
             </div>
-            <input type="checkbox" checked onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+
+            <div id="detail_${t.id}" class="hidden mt-3 pt-2.5 border-t border-slate-200/80 text-xs text-slate-500 space-y-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">📋 Splněný úkol:</span>
+                <div class="text-[11px] text-slate-600 bg-slate-100/70 p-2 rounded-xl border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap">${t.fullDetail || t.title}</div>
+              </div>
+            </div>
           `;
           completedContainer.appendChild(card);
         });
+      }
+    }
+
+    function toggleTaskDetail(taskId) {
+      const el = document.getElementById(`detail_${taskId}`);
+      if (el) {
+        el.classList.toggle('hidden');
       }
     }
 
@@ -1096,7 +1166,7 @@
       if (ghToken) {
         try {
           const encoded = btoa(unescape(encodeURIComponent(updatedMd)));
-          const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+          let putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${ghToken}`,
@@ -1109,6 +1179,33 @@
               sha: currentGitHubSha
             })
           });
+
+          // Ošetření 409 Conflict (pokud byl soubor mezitím commitnut jinde)
+          if (putRes.status === 409) {
+            const getLatest = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+              headers: { 
+                'Authorization': `Bearer ${ghToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            if (getLatest.ok) {
+              const fileData = await getLatest.json();
+              currentGitHubSha = fileData.sha;
+              putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${ghToken}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  message: commitMsg || "feat(tasks): Aktualizace stavu úkolu (retry)",
+                  content: encoded,
+                  sha: currentGitHubSha
+                })
+              });
+            }
+          }
 
           if (putRes.ok) {
             const putJson = await putRes.json();
@@ -1211,6 +1308,70 @@
       input.value = "";
     }
 
+    async function parseVoiceWithGemini(rawText) {
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) return null;
+
+      const workingModel = localStorage.getItem('gemini_working_model') || 'gemini-3.8-flash';
+      const modelsToTry = [workingModel, 'gemini-1.5-flash', 'gemini-1.5-pro'];
+
+      const prompt = `Jsi špičková osobní AI asistentka a letový dispečer pro Davida Prycla (BDM AC Baluo FTK UP, Transfer Scout, StartItUp).
+David ti v běhu z mobilu nadiktoval tento hlasový záznam:
+"${rawText}"
+
+Dnešek je: Pondělí 5. 10. 2026.
+Aktuální čas: ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}.
+Davidův dnešní rozvrh:
+- 12:30–14:00: Dokončení 4 Baluo reportů (P0 Finiš)
+- 14:00–16:00: Příprava prezentace pro Děkana Hápa (P1 Strategie)
+- 16:00–16:30: Operativní okno pro hovory a rychlé úkoly (P2 Operativa)
+- 16:30–17:30: Fitness AC Baluo s Pájou Mrnuštíkem (P3 Sport)
+
+Tvůj úkol jako elitní asistentka (Apple Reminders / Executive Assistant styl):
+1. Vytáhni čistý a výstižný název úkolu (cleanTitle, max 6-8 slov, např. 'Vyřešit Tomáše Junka').
+2. Zařaď jej do konkrétního časového slotu podle Davidova dne (timeSlot, např. 'Dnes 16:00 – 16:30' nebo 'Dnes do 14:00' nebo 'Zítra 09:00').
+3. Urči kategorii (category: OPERATIVA | BALUO | STRATEGIE | STARTITUP | OSOBNÍ).
+4. Urči prioritu (priority: P0 | P1 | P2 | P3).
+5. Zachovej detailní kontext a přidej stručné asistentčino doporučení dalšího kroku (details).
+
+Vrať POUZE validní JSON bez markdown značek:
+{
+  "cleanTitle": "...",
+  "timeSlot": "...",
+  "category": "...",
+  "priority": "...",
+  "details": "..."
+}`;
+
+      for (const model of modelsToTry) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.2,
+                response_mime_type: "application/json"
+              }
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+              const rawJson = data.candidates[0].content.parts[0].text;
+              const clean = rawJson.trim().replace(/^```json/i, '').replace(/```$/i, '').trim();
+              return JSON.parse(clean);
+            }
+          }
+        } catch (e) {
+          console.warn("Chyba AI dispečera:", e);
+        }
+      }
+      return null;
+    }
+
     async function submitThoughtDirect(thought, isTask = false) {
       const ghToken = localStorage.getItem('github_token') || "";
       const nowStr = new Date().toLocaleDateString('cs-CZ') + " " + new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
@@ -1234,6 +1395,18 @@
       // 2. Cloud GitHub API
       if (ghToken) {
         try {
+          // AI analýza hlasového zadání (Letový dispečer)
+          let aiParsed = null;
+          if (isTask) {
+            const homeBtn = document.getElementById('homeDictationMicBtn');
+            const oldLabel = homeBtn ? homeBtn.innerHTML : '';
+            try {
+              aiParsed = await parseVoiceWithGemini(thought);
+            } catch (err) {
+              console.warn("AI parse skipped:", err);
+            }
+          }
+
           // Pokud nemáme SHA nebo markdown, načteme aktuální soubor
           const ghRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
             headers: {
@@ -1247,9 +1420,20 @@
             currentRawMarkdown = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
           }
 
-          const entry = isTask 
-            ? `- [ ] **[P2 - OPERATIVA]:** ${thought} (zadáno z mobilu ${nowStr})\n`
-            : `- [ ] **[MOBILNÍ ZÁPIS ${nowStr}]:** ${thought}\n`;
+          let entry = "";
+          const safeRaw = thought.replace(/\n/g, ' ').replace(/-->/g, '');
+
+          if (aiParsed && aiParsed.cleanTitle) {
+            const cat = aiParsed.category || "OPERATIVA";
+            const prio = aiParsed.priority || "P2";
+            const slot = aiParsed.timeSlot || "Dnes";
+            const det = (aiParsed.details || "").replace(/\n/g, ' ').replace(/-->/g, '');
+            entry = `- [ ] **[${cat} • ${prio}]:** ${aiParsed.cleanTitle} (⏱️ ${slot}) <!-- detail: ${det} | raw: ${safeRaw} -->\n`;
+          } else {
+            entry = isTask 
+              ? `- [ ] **[P2 - OPERATIVA]:** ${thought} (zadáno z mobilu ${nowStr}) <!-- raw: ${safeRaw} -->\n`
+              : `- [ ] **[MOBILNÍ ZÁPIS ${nowStr}]:** ${thought}\n`;
+          }
 
           let updatedMd = currentRawMarkdown || "# 🎯 CENTRÁLA PRIORIT & OPERATIVNÍ ŘÍZENÍ (DAVID PRYCL)\n\n## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
           const inboxHeader = "## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
@@ -1262,7 +1446,7 @@
           }
 
           const encoded = btoa(unescape(encodeURIComponent(updatedMd)));
-          const putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+          let putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${ghToken}`,
@@ -1270,11 +1454,38 @@
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              message: `feat(inbox): ${isTask ? 'Nový úkol' : 'Zápis'} z Androidu (${nowStr})`,
+              message: `feat(inbox): ${isTask ? (aiParsed ? aiParsed.cleanTitle : 'Nový úkol') : 'Zápis'} (${nowStr})`,
               content: encoded,
               sha: currentGitHubSha
             })
           });
+
+          // 409 Conflict Retry
+          if (putRes.status === 409) {
+            const getLatest = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+              headers: { 
+                'Authorization': `Bearer ${ghToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            if (getLatest.ok) {
+              const fileData = await getLatest.json();
+              currentGitHubSha = fileData.sha;
+              putRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `Bearer ${ghToken}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  message: `feat(inbox): ${isTask ? 'Nový úkol' : 'Zápis'} (retry)`,
+                  content: encoded,
+                  sha: currentGitHubSha
+                })
+              });
+            }
+          }
 
           if (putRes.ok) {
             const putJson = await putRes.json();
@@ -1282,7 +1493,11 @@
             currentRawMarkdown = updatedMd;
             const parsedData = parseMarkdown(updatedMd);
             renderUI(parsedData);
-            alert(`✅ ${isTask ? 'Úkol přidán do K řešení' : 'Poznámka uložena do Inboxu'}!`);
+            
+            const msg = aiParsed 
+              ? `🛫 Dispečer zařadil úkol "${aiParsed.cleanTitle}" do plánu dne na ${aiParsed.timeSlot}!`
+              : `✅ ${isTask ? 'Úkol přidán do K řešení' : 'Poznámka uložena do Inboxu'}!`;
+            alert(msg);
             return;
           } else {
             const errJson = await putRes.json();
