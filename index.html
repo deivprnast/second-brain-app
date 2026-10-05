@@ -445,25 +445,53 @@
     let isDictating = false;
     let recognition = null;
     let activeDictationTarget = 'inbox'; // 'inbox', 'home' nebo 'chat'
+    let finalSessionTranscript = '';
+
+    // Inteligentní filtr pro odstranění zdvojených frází z mobilního mikrofonu
+    function cleanDuplicatePhrases(text) {
+      if (!text) return "";
+      let words = text.replace(/\s+/g, " ").trim().split(" ");
+      let out = [];
+      for (let i = 0; i < words.length; i++) {
+        let matched = false;
+        for (let len = 40; len >= 1; len--) {
+          if (out.length >= len && i + len <= words.length) {
+            const prev = out.slice(-len).join(" ").toLowerCase();
+            const next = words.slice(i, i + len).join(" ").toLowerCase();
+            if (prev === next) {
+              i += len - 1;
+              matched = true;
+              break;
+            }
+          }
+        }
+        if (!matched) {
+          out.push(words[i]);
+        }
+      }
+      return out.join(" ");
+    }
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
-      recognition.continuous = true;
+      recognition.continuous = false; // Stabilní jedno-větové relace s čistým napojením pro Android
       recognition.interimResults = true;
       recognition.lang = 'cs-CZ';
 
       recognition.onresult = (event) => {
-        let finalStr = '';
         let interimStr = '';
-        for (let i = 0; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalStr += event.results[i][0].transcript + ' ';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const res = event.results[i];
+          if (res.isFinal) {
+            finalSessionTranscript += res[0].transcript.trim() + ' ';
           } else {
-            interimStr += event.results[i][0].transcript;
+            interimStr = res[0].transcript.trim();
           }
         }
-        const fullTranscript = (finalStr + interimStr).trim();
+
+        let fullTranscript = (finalSessionTranscript + ' ' + interimStr).trim().replace(/\s+/g, ' ');
+        fullTranscript = cleanDuplicatePhrases(fullTranscript);
 
         let targetId = 'inboxInput';
         if (activeDictationTarget === 'home') targetId = 'quickCaptureInput';
@@ -483,9 +511,14 @@
       recognition.onerror = (e) => {
         console.warn("Speech recognition error:", e);
       };
+
       recognition.onend = () => {
         if (isDictating) {
-          try { recognition.start(); } catch(e){}
+          try {
+            recognition.start();
+          } catch(e) {
+            console.warn("Recognition restart notice:", e);
+          }
         }
       };
     }
@@ -1234,7 +1267,16 @@
         return;
       }
 
-      isDictating = !isDictating;
+      if (isDictating) {
+        stopVoiceDictation();
+        return;
+      }
+
+      // Zahájení nové čisté relace diktování
+      isDictating = true;
+      const targetEl = document.getElementById(targetInputId);
+      finalSessionTranscript = targetEl && targetEl.value ? cleanDuplicatePhrases(targetEl.value).trim() + ' ' : '';
+
       const isHome = activeDictationTarget === 'home';
       const isChat = activeDictationTarget === 'chat';
       const indicator = isHome ? document.getElementById('homeDictationIndicator') : document.getElementById('dictationIndicator');
@@ -1242,22 +1284,23 @@
       if (isHome) mic = document.getElementById('homeDictationMicBtn');
       else if (isChat) mic = document.getElementById('aiMicBtn');
 
-      if (isDictating) {
-        if (indicator && !isChat) indicator.classList.remove('hidden');
-        if (mic) {
-          mic.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-700', 'ring-2', 'ring-rose-500/30');
-          if (isHome) {
-            const lbl = document.getElementById('homeDictationLabel');
-            if (lbl) lbl.innerText = "Poslouchám... klepni pro stop";
-            const liveBox = document.getElementById('homeLiveTranscriptBox');
-            if (liveBox) liveBox.innerText = "Poslouchám tvůj hlas... mluv!";
-          }
+      if (indicator && !isChat) indicator.classList.remove('hidden');
+      if (mic) {
+        mic.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-700', 'ring-2', 'ring-rose-500/30');
+        if (isHome) {
+          const lbl = document.getElementById('homeDictationLabel');
+          if (lbl) lbl.innerText = "Poslouchám... klepni pro stop";
+          const liveBox = document.getElementById('homeLiveTranscriptBox');
+          if (liveBox) liveBox.innerText = finalSessionTranscript || "Poslouchám tvůj hlas... mluv!";
         }
-        if (recognition) {
-          try { recognition.start(); } catch(e){}
+      }
+
+      if (recognition) {
+        try {
+          recognition.start();
+        } catch(e) {
+          console.warn("Recognition start notice:", e);
         }
-      } else {
-        stopVoiceDictation();
       }
     }
 
@@ -1284,6 +1327,15 @@
       if (recognition) {
         try { recognition.stop(); } catch(e){}
       }
+
+      // Očištění textu od případných zdvojených frází
+      ['quickCaptureInput', 'inboxInput', 'aiChatInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value) {
+          el.value = cleanDuplicatePhrases(el.value);
+        }
+      });
+      finalSessionTranscript = '';
     }
 
     async function submitQuickCaptureHome(mode = 'inbox') {
@@ -1581,8 +1633,9 @@ Vrať POUZE validní JSON bez markdown značek:
     }
 
     async function sendChatMessage() {
+      stopVoiceDictation();
       const input = document.getElementById('aiChatInput');
-      const text = input.value.trim();
+      const text = cleanDuplicatePhrases(input.value).trim();
       if (!text) return;
 
       const chatBox = document.getElementById('aiChatBox');
