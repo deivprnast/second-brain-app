@@ -18,14 +18,13 @@
     .pulse-record {
       animation: pulse-subtle 1.2s infinite ease-in-out;
     }
-    html, body {
-      height: 100%;
-      height: 100dvh;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+    html {
+      background-color: #f8fafc;
+    }
+    body {
       background-color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
     input, textarea {
       -webkit-user-select: text !important;
@@ -41,13 +40,13 @@
     }
   </style>
 </head>
-<body class="text-slate-900 bg-slate-100 flex justify-center h-full h-[100dvh] overflow-hidden p-0 sm:p-4">
+<body class="text-slate-900 bg-slate-100 flex justify-center min-h-screen p-0 sm:p-4 pb-24">
 
   <!-- Hlavní kontejner kokpitu -->
-  <div class="w-full max-w-md bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl flex flex-col h-full h-[100dvh] relative overflow-hidden">
+  <div class="w-full max-w-md bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl min-h-screen relative flex flex-col">
 
-    <!-- Zabezpečení / Lock Screen Overlay -->
-    <div id="lockScreen" class="absolute inset-0 bg-white/99 backdrop-blur-md z-50 flex flex-col items-center justify-between p-6 transition-all duration-300">
+    <!-- Zabezpečení / Lock Screen Overlay (Pevně přes celou obrazovku) -->
+    <div id="lockScreen" class="fixed inset-0 bg-white/99 backdrop-blur-md z-50 flex flex-col items-center justify-between p-6 transition-all duration-300">
       <div class="w-full pt-10 flex flex-col items-center">
         <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-3 text-indigo-600 shadow-sm">
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -112,7 +111,7 @@
     </header>
 
     <!-- Obsah tabů -->
-    <main class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-4 space-y-5 pb-8">
+    <main class="p-4 space-y-5 flex-1">
 
       <!-- PROMINENTNÍ BANNER PRO VLOŽENÍ TOKENU (pokud chybí) -->
       <div id="tokenSetupBanner" class="p-4 bg-indigo-50/80 border border-indigo-200 rounded-2xl space-y-2.5 shadow-sm">
@@ -140,6 +139,39 @@
       <!-- TAB 1: MISE & ČASOVÁ OSA -->
       <div id="tabContentMission" class="space-y-5">
         
+        <!-- 🎙️ RYCHLÝ ZÁCHYT MYŠLENKY / HLASOVKA (PŘÍMO NA HLAVNÍ STRÁNCE) -->
+        <div class="p-3.5 bg-gradient-to-r from-indigo-50/90 via-slate-50 to-indigo-50/70 border border-indigo-200/90 rounded-2xl shadow-xs space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-base">🎙️</span>
+              <span class="text-xs font-bold text-indigo-950 uppercase tracking-wide">Rychlý záchyt / Hlasovka</span>
+            </div>
+            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Cloud Sync 24/7</span>
+          </div>
+
+          <div class="flex space-x-2">
+            <input id="quickCaptureInput" type="text" placeholder="Co máš na mysli? Např: Zavolat Michalovi..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+            <button onclick="submitQuickCaptureHome()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs shrink-0 flex items-center space-x-1">
+              <span>Uložit</span>
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="toggleVoiceDictationHome()" id="homeDictationMicBtn" class="flex-1 flex items-center justify-center space-x-2 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 active:scale-95 transition-all shadow-2xs">
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+              <span id="homeDictationLabel">Diktovat hlasem (česky)</span>
+            </button>
+            <button onclick="switchTab('inbox')" class="px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-semibold rounded-xl active:scale-95 transition-all shrink-0">
+              Celý Inbox →
+            </button>
+          </div>
+
+          <div id="homeDictationIndicator" class="hidden p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center space-x-2 text-xs text-rose-700 pulse-record">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
+            <span class="font-medium">Poslouchám hlas a přepisuji... mluv!</span>
+          </div>
+        </div>
+
         <!-- Sekce 3 Klíčových misí -->
         <section>
           <div class="flex items-center justify-between mb-2.5">
@@ -343,24 +375,26 @@
 
     </main>
 
-    <!-- Spodní Navigační Lišta (Tabs) - Pevně ukotvena v layoutu, trvale viditelná -->
-    <nav class="shrink-0 bg-white/98 border-t border-slate-200/90 px-3 py-2 flex items-center justify-around backdrop-blur z-30 shadow-[0_-2px_12px_rgba(0,0,0,0.05)] pb-[max(0.6rem,env(safe-area-inset-bottom))]">
-      <button onclick="switchTab('mission')" id="navBtnMission" class="flex flex-col items-center text-indigo-600 transition-colors py-1 px-3 rounded-xl active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-        <span class="text-[10px] font-bold mt-0.5">Mise</span>
-      </button>
-      <button onclick="switchTab('inbox')" id="navBtnInbox" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-        <span class="text-[10px] font-medium mt-0.5">Inbox</span>
-      </button>
-      <button onclick="switchTab('ai')" id="navBtnAI" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-        <span class="text-[10px] font-medium mt-0.5">AI Kouč</span>
-      </button>
-      <button onclick="switchTab('settings')" id="navBtnSettings" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-        <span class="text-[10px] font-medium mt-0.5">Cloud</span>
-      </button>
+    <!-- Spodní Navigační Lišta (Tabs) - Pevně přilepená k obrazovce (fixed), vždy 100% viditelná -->
+    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 z-40 bg-white/98 border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] backdrop-blur max-w-md mx-auto">
+      <div class="flex items-center justify-around py-2 px-2 pb-[max(0.6rem,env(safe-area-inset-bottom))]">
+        <button onclick="switchTab('mission')" id="navBtnMission" class="flex flex-col items-center text-indigo-600 transition-colors py-1 px-3 rounded-xl active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          <span class="text-[10px] font-bold mt-0.5">Mise</span>
+        </button>
+        <button onclick="switchTab('inbox')" id="navBtnInbox" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+          <span class="text-[10px] font-medium mt-0.5">Inbox</span>
+        </button>
+        <button onclick="switchTab('ai')" id="navBtnAI" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+          <span class="text-[10px] font-medium mt-0.5">AI Kouč</span>
+        </button>
+        <button onclick="switchTab('settings')" id="navBtnSettings" class="flex flex-col items-center text-slate-400 hover:text-slate-700 transition-colors py-1 px-3 rounded-xl active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span class="text-[10px] font-medium mt-0.5">Cloud</span>
+        </button>
+      </div>
     </nav>
 
   </div>
@@ -377,6 +411,7 @@
     // Web Speech API
     let isDictating = false;
     let recognition = null;
+    let activeDictationTarget = 'inbox'; // 'inbox' nebo 'home'
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -387,12 +422,18 @@
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        const input = document.getElementById('inboxInput');
-        input.value = input.value ? input.value + " " + transcript : transcript;
+        const targetId = activeDictationTarget === 'home' ? 'quickCaptureInput' : 'inboxInput';
+        const input = document.getElementById(targetId);
+        if (input) {
+          input.value = input.value ? input.value + " " + transcript : transcript;
+        }
         stopVoiceDictation();
       };
 
-      recognition.onerror = () => { stopVoiceDictation(); };
+      recognition.onerror = (e) => {
+        console.warn("Speech recognition error:", e);
+        stopVoiceDictation();
+      };
       recognition.onend = () => { stopVoiceDictation(); };
     }
 
@@ -786,14 +827,31 @@
       }
     }
 
-    function toggleVoiceDictation() {
+    function toggleVoiceDictationHome() {
+      activeDictationTarget = 'home';
+      toggleVoiceDictation('quickCaptureInput');
+    }
+
+    function toggleVoiceDictation(targetInputId = 'inboxInput') {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Hlasové diktování není v tomto prohlížeči plně podporováno. Použij Chrome na Androidu nebo zadej text ručně.");
+        return;
+      }
+
       isDictating = !isDictating;
-      const indicator = document.getElementById('dictationIndicator');
-      const mic = document.getElementById('dictationMicBtn');
+      const isHome = activeDictationTarget === 'home';
+      const indicator = isHome ? document.getElementById('homeDictationIndicator') : document.getElementById('dictationIndicator');
+      const mic = isHome ? document.getElementById('homeDictationMicBtn') : document.getElementById('dictationMicBtn');
 
       if (isDictating) {
-        indicator.classList.remove('hidden');
-        mic.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-700');
+        if (indicator) indicator.classList.remove('hidden');
+        if (mic) {
+          mic.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-700');
+          if (isHome) {
+            const lbl = document.getElementById('homeDictationLabel');
+            if (lbl) lbl.innerText = "Poslouchám... klepni pro stop";
+          }
+        }
         if (recognition) {
           try { recognition.start(); } catch(e){}
         }
@@ -804,12 +862,35 @@
 
     function stopVoiceDictation() {
       isDictating = false;
-      document.getElementById('dictationIndicator').classList.add('hidden');
-      const mic = document.getElementById('dictationMicBtn');
-      mic.classList.remove('bg-rose-50', 'border-rose-200', 'text-rose-700');
+      const indInbox = document.getElementById('dictationIndicator');
+      if (indInbox) indInbox.classList.add('hidden');
+      const indHome = document.getElementById('homeDictationIndicator');
+      if (indHome) indHome.classList.add('hidden');
+
+      const micHome = document.getElementById('homeDictationMicBtn');
+      if (micHome) {
+        micHome.classList.remove('bg-rose-50', 'border-rose-200', 'text-rose-700');
+        const lbl = document.getElementById('homeDictationLabel');
+        if (lbl) lbl.innerText = "Diktovat hlasem (česky)";
+      }
+
+      const micInbox = document.getElementById('dictationMicBtn');
+      if (micInbox) micInbox.classList.remove('bg-rose-50', 'border-rose-200', 'text-rose-700');
+
       if (recognition) {
         try { recognition.stop(); } catch(e){}
       }
+    }
+
+    async function submitQuickCaptureHome() {
+      const input = document.getElementById('quickCaptureInput');
+      const val = input.value.trim();
+      if (!val) {
+        alert("Nejprve zadej poznámku nebo nadiktuj hlasem.");
+        return;
+      }
+      await submitThoughtDirect(val);
+      input.value = "";
     }
 
     async function submitInboxThought() {
@@ -841,10 +922,25 @@
       }
 
       // 2. Cloud GitHub API
-      if (ghToken && currentRawMarkdown && currentGitHubSha) {
+      if (ghToken) {
         try {
+          // Pokud nemáme SHA nebo markdown, nejprve načteme aktuální soubor
+          if (!currentGitHubSha || !currentRawMarkdown) {
+            const ghRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
+              headers: {
+                'Authorization': `Bearer ${ghToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            if (ghRes.ok) {
+              const fileData = await ghRes.json();
+              currentGitHubSha = fileData.sha;
+              currentRawMarkdown = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+            }
+          }
+
           const entry = `- [ ] **[MOBILNÍ ZÁPIS ${nowStr}]:** ${thought}\n`;
-          let updatedMd = currentRawMarkdown;
+          let updatedMd = currentRawMarkdown || "# 🎯 CENTRÁLA PRIORIT & OPERATIVNÍ ŘÍZENÍ (DAVID PRYCL)\n\n## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
           const inboxHeader = "## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
           
           if (updatedMd.includes(inboxHeader)) {
@@ -874,15 +970,19 @@
             currentGitHubSha = putJson.content.sha;
             currentRawMarkdown = updatedMd;
             fetchData();
-            alert("✅ Uloženo přímo do GitHub cloudu! Mac může spát.");
+            alert("✅ Poznámka uložena přímo do tvého Druhého mozku v Cloudu!");
             return;
+          } else {
+            const errJson = await putRes.json();
+            alert("Chyba při ukládání: " + (errJson.message || "zkontroluj token"));
           }
         } catch (err) {
           console.error("Chyba při přímém zápisu na GitHub:", err);
+          alert("Chyba spojení s GitHubem: " + err.message);
         }
+      } else {
+        alert("Chybí GitHub token. Aktivuj Cloud v záložce Cloud.");
       }
-
-      alert("✅ Uloženo do mezipaměti: " + thought);
     }
 
     // AI Chat
