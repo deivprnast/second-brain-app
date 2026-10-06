@@ -42,6 +42,12 @@
 </head>
 <body class="text-slate-900 bg-slate-100 flex justify-center min-h-screen p-0 sm:p-4 pb-24">
 
+  <!-- Plovoucí Toast Asistentky Kláry -->
+  <div id="klaraToast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2 flex items-center space-x-2 px-4 py-2 bg-slate-900/95 text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-700/80 backdrop-blur">
+    <span class="text-base" id="klaraToastIcon">🤖</span>
+    <span id="klaraToastText">Klára připravena</span>
+  </div>
+
   <!-- Hlavní kontejner kokpitu -->
   <div class="w-full max-w-md md:max-w-4xl lg:max-w-7xl xl:max-w-[1720px] mx-auto bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl min-h-screen relative flex flex-col">
 
@@ -52,7 +58,7 @@
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </div>
         <h2 class="text-xl font-bold text-slate-900 tracking-tight">Druhý mozek Davida Prycla</h2>
-        <p class="text-xs text-slate-500 mt-1">Zabezpečený Cloud & Chief of Staff</p>
+        <p class="text-xs text-slate-500 mt-1">Asistentka Klára & Chief of Staff</p>
         
         <!-- PIN Dots -->
         <div class="flex space-x-3 my-8">
@@ -86,9 +92,9 @@
         <div>
           <div class="flex items-center space-x-1.5">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="text-[11px] font-bold tracking-wider uppercase text-slate-600">Chief of Staff • Gemini 3.8</span>
+            <span class="text-[11px] font-bold tracking-wider uppercase text-slate-600">🤖 Asistentka Klára • Chief of Staff</span>
           </div>
-          <h1 id="headerDate" class="text-base font-bold text-slate-900 mt-0.5">Pondělí 5. října 2026</h1>
+          <h1 id="headerDate" class="text-base font-bold text-slate-900 mt-0.5">Úterý 6. října 2026</h1>
         </div>
         <div class="flex items-center space-x-1">
           <button onclick="fetchData()" title="Obnovit" class="p-2 text-slate-400 hover:text-slate-700 rounded-lg active:bg-slate-100 transition-colors">
@@ -144,15 +150,18 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-1.5">
               <span class="text-base">🎙️</span>
-              <span class="text-xs font-bold text-indigo-950 uppercase tracking-wide">Rychlý záchyt / Hlasovka</span>
+              <div>
+                <span class="text-xs font-bold text-indigo-950 uppercase tracking-wide">Klára • Rychlý záchyt & Hlasovka</span>
+                <span class="text-[10px] text-indigo-600 block font-normal">Klára sama rozezná Baluo, StartItUp i Osobní a zařadí do sloupce</span>
+              </div>
             </div>
             <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Cloud Sync 24/7</span>
           </div>
 
           <div class="flex space-x-2">
-            <input id="quickCaptureInput" type="text" placeholder="Co máš na mysli? Např: Vyřešit Tomáše Junka..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
-            <button onclick="submitQuickCaptureHome('inbox')" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs shrink-0 flex items-center space-x-1" title="Uložit do Inboxu">
-              <span>Uložit</span>
+            <input id="quickCaptureInput" type="text" placeholder="Mluv nebo piš (např. Vypsat cesťák Karlovi do Chorvatska...)" class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+            <button onclick="submitQuickCaptureHome('auto')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs shrink-0 flex items-center space-x-1" title="Klára automaticky rozezná svět a zařadí úkol do správného sloupce">
+              <span>Zařadit</span>
             </button>
           </div>
 
@@ -230,7 +239,7 @@
           </div>
 
           <!-- SLOUPEC 2: 🔴 AC BALUO & FTK UP -->
-          <div id="kanbanCol_baluo" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-rose-50/20 border border-rose-200/80 rounded-2xl overflow-hidden shadow-2xs">
+          <div id="kanbanCol_baluo" ondragover="handleColDragOver(event)" ondragenter="handleColDragEnter(event, 'baluo')" ondragleave="handleColDragLeave(event, 'baluo')" ondrop="handleColDrop(event, 'baluo')" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-rose-50/20 border border-rose-200/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
             <div class="p-3 bg-rose-50/90 border-b border-rose-200/90 flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <span class="text-base">🔴</span>
@@ -247,7 +256,7 @@
           </div>
 
           <!-- SLOUPEC 3: 🚀 STARTITUP & ZISK -->
-          <div id="kanbanCol_startitup" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-indigo-50/20 border border-indigo-200/80 rounded-2xl overflow-hidden shadow-2xs">
+          <div id="kanbanCol_startitup" ondragover="handleColDragOver(event)" ondragenter="handleColDragEnter(event, 'startitup')" ondragleave="handleColDragLeave(event, 'startitup')" ondrop="handleColDrop(event, 'startitup')" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-indigo-50/20 border border-indigo-200/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
             <div class="p-3 bg-indigo-50/90 border-b border-indigo-200/90 flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <span class="text-base">🚀</span>
@@ -264,7 +273,7 @@
           </div>
 
           <!-- SLOUPEC 4: 🟢 OSOBNÍ, SPORT & RODINA -->
-          <div id="kanbanCol_personal" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-emerald-50/20 border border-emerald-200/80 rounded-2xl overflow-hidden shadow-2xs">
+          <div id="kanbanCol_personal" ondragover="handleColDragOver(event)" ondragenter="handleColDragEnter(event, 'personal')" ondragleave="handleColDragLeave(event, 'personal')" ondrop="handleColDrop(event, 'personal')" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-emerald-50/20 border border-emerald-200/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
             <div class="p-3 bg-emerald-50/90 border-b border-emerald-200/90 flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <span class="text-base">🟢</span>
@@ -281,7 +290,7 @@
           </div>
 
           <!-- SLOUPEC 5: 📥 INBOX & OPERATIVA -->
-          <div id="kanbanCol_inbox" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-amber-50/20 border border-amber-200/80 rounded-2xl overflow-hidden shadow-2xs">
+          <div id="kanbanCol_inbox" ondragover="handleColDragOver(event)" ondragenter="handleColDragEnter(event, 'inbox')" ondragleave="handleColDragLeave(event, 'inbox')" ondrop="handleColDrop(event, 'inbox')" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-amber-50/20 border border-amber-200/80 rounded-2xl overflow-hidden shadow-2xs transition-all">
             <div class="p-3 bg-amber-50/90 border-b border-amber-200/90 flex items-center justify-between">
               <div class="flex items-center space-x-2">
                 <span class="text-base">📥</span>
@@ -1187,27 +1196,254 @@
       return match[1].replace(/[\.,\)]+$/, '');
     }
 
-    function getTaskCategory(task) {
-      const combined = ((task.tag || '') + ' ' + (task.title || '') + ' ' + (task.fullDetail || '')).toLowerCase();
-      
+    // ==========================================
+    // ASISTENTKA KLÁRA: TOAST & CHYTRÁ KLASIFIKACE
+    // ==========================================
+    let klaraToastTimer = null;
+    function showKlaraToast(text, icon = '🤖') {
+      const toast = document.getElementById('klaraToast');
+      const iconEl = document.getElementById('klaraToastIcon');
+      const textEl = document.getElementById('klaraToastText');
+      if (!toast) return;
+
+      if (iconEl) iconEl.innerText = icon;
+      if (textEl) textEl.innerText = text;
+
+      toast.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (klaraToastTimer) clearTimeout(klaraToastTimer);
+      klaraToastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
+      }, 3500);
+    }
+
+    function klaraClassifyThought(text) {
+      if (!text) return 'inbox';
+      const t = text.toLowerCase();
+
       // 1. Osobní & Sport & Rodina
-      if (combined.includes('sport') || combined.includes('osobní') || combined.includes('fitness') || combined.includes('fitko') || combined.includes('janč') || combined.includes('rodina') || combined.includes('svišti') || combined.includes('pája') || combined.includes('andrejk') || combined.includes('spálov')) {
+      if (
+        t.includes('sport') || t.includes('fitness') || t.includes('fitko') || t.includes('posil') ||
+        t.includes('trénink') || t.includes('trenink') || t.includes('páj') || t.includes('paj') ||
+        t.includes('mrnušt') || t.includes('mrnust') || t.includes('janč') || t.includes('janc') ||
+        t.includes('rodin') || t.includes('svišt') || t.includes('svist') || t.includes('děti') ||
+        t.includes('deti') || t.includes('andrejk') || t.includes('spálov') || t.includes('spalov') ||
+        t.includes('zdraví') || t.includes('zdravi') || t.includes('regener') || t.includes('odpočin') ||
+        t.includes('odpocin') || t.includes('spánek') || t.includes('spanek') || t.includes('osobní') ||
+        t.includes('osobni')
+      ) {
         return 'personal';
       }
-      
+
       // 2. StartItUp & Zisk
-      if (combined.includes('startitup') || combined.includes('nastartujto') || combined.includes('vip web') || combined.includes('zbyň') || combined.includes('klára') || combined.includes('továrn') || combined.includes('obsah.ai') || combined.includes('gamifiter')) {
+      if (
+        t.includes('startitup') || t.includes('start it up') || t.includes('nastartujto') ||
+        t.includes('vip web') || t.includes('vip weby') || t.includes('továrn') || t.includes('tovarn') ||
+        t.includes('zbyň') || t.includes('zbyn') || t.includes('obsah.ai') || t.includes('gamifiter') ||
+        t.includes('byznys') || t.includes('zisk') || t.includes('monetiz') || t.includes('faktur') ||
+        t.includes('prodej') || t.includes('crm')
+      ) {
         return 'startitup';
       }
-      
+
       // 3. AC Baluo & FTK UP
-      if (combined.includes('baluo') || combined.includes('děkan') || combined.includes('háp') || combined.includes('vtp') || combined.includes('suchomel') || combined.includes('král') || combined.includes('sigmund') || combined.includes('botek') || combined.includes('fačr') || combined.includes('hůlka') || combined.includes('klientsk') || combined.includes('reprezent') || combined.includes('dygrýn') || combined.includes('iga') || combined.includes('klinick')) {
+      if (
+        t.includes('baluo') || t.includes('balu') || t.includes('ftk') || t.includes('upol') ||
+        t.includes('děkan') || t.includes('dekan') || t.includes('háp') || t.includes('hap') ||
+        t.includes('vtp') || t.includes('suchomel') || t.includes('král') || t.includes('kral') ||
+        t.includes('tajos') || t.includes('tajoš') || t.includes('sigmund') || t.includes('botek') ||
+        t.includes('fačr') || t.includes('facr') || t.includes('hůlk') || t.includes('hulk') ||
+        t.includes('karl') || t.includes('cesťák') || t.includes('cestak') || t.includes('chorvatsk') ||
+        t.includes('klientsk') || t.includes('reprezent') || t.includes('dygrýn') || t.includes('dygryn') ||
+        t.includes('iga') || t.includes('klinick') || t.includes('clinical') || t.includes('trial') ||
+        t.includes('studie') || t.includes('diagnost') || t.includes('kinantropolog') ||
+        t.includes('fotbal') || t.includes('junek') || t.includes('havlín') || t.includes('havlin')
+      ) {
         return 'baluo';
       }
-      
-      // 4. Inbox & Rychlá operativa
+
+      // 4. Inbox & Obecné
       return 'inbox';
     }
+
+    function getColName(colKey) {
+      switch (colKey) {
+        case 'baluo': return 'AC Baluo & FTK 🔴';
+        case 'startitup': return 'StartItUp & Zisk 🚀';
+        case 'personal': return 'Osobní & Sport 🟢';
+        case 'inbox': return 'Inbox & Rychlé 📥';
+        default: return 'Nástěnka 📋';
+      }
+    }
+
+    function getColIcon(colKey) {
+      switch (colKey) {
+        case 'baluo': return '🔴';
+        case 'startitup': return '🚀';
+        case 'personal': return '🟢';
+        case 'inbox': return '📥';
+        default: return '📋';
+      }
+    }
+
+    function getTaskCategory(task) {
+      if (task.customCategory) return task.customCategory;
+
+      const tagUpper = (task.tag || '').toUpperCase();
+      if (tagUpper.includes('BALUO') || tagUpper.includes('FTK') || tagUpper.includes('FAČR')) return 'baluo';
+      if (tagUpper.includes('STARTITUP') || tagUpper.includes('VIP')) return 'startitup';
+      if (tagUpper.includes('SPORT') || tagUpper.includes('OSOBNÍ')) return 'personal';
+
+      const combined = ((task.tag || '') + ' ' + (task.title || '') + ' ' + (task.fullDetail || ''));
+      return klaraClassifyThought(combined);
+    }
+
+    // ==========================================
+    // DRAG AND DROP & PŘEŘAZOVÁNÍ MEZI SVĚTY
+    // ==========================================
+    let isDraggingCard = false;
+    let currentDraggedTaskId = null;
+
+    function handleCardDragStart(event, taskId) {
+      isDraggingCard = true;
+      currentDraggedTaskId = taskId;
+      if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', taskId);
+        event.dataTransfer.effectAllowed = 'move';
+      }
+      const el = event.currentTarget || event.target;
+      if (el) {
+        setTimeout(() => {
+          el.classList.add('opacity-40', 'scale-[0.98]', 'border-dashed');
+        }, 0);
+      }
+    }
+
+    function handleCardDragEnd(event) {
+      const el = event.currentTarget || event.target;
+      if (el) {
+        el.classList.remove('opacity-40', 'scale-[0.98]', 'border-dashed');
+      }
+      setTimeout(() => {
+        isDraggingCard = false;
+        currentDraggedTaskId = null;
+      }, 100);
+
+      // Vyčistit případné hover efekty sloupců
+      ['baluo', 'startitup', 'personal', 'inbox'].forEach(k => {
+        const col = document.getElementById(`kanbanCol_${k}`);
+        if (col) {
+          col.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/50', 'ring-rose-500', 'bg-rose-50/50', 'ring-emerald-500', 'bg-emerald-50/50', 'ring-amber-500', 'bg-amber-50/50');
+        }
+      });
+    }
+
+    function handleColDragOver(event) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+    }
+
+    function handleColDragEnter(event, colKey) {
+      event.preventDefault();
+      const col = document.getElementById(`kanbanCol_${colKey}`);
+      if (col) {
+        col.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50/50');
+      }
+    }
+
+    function handleColDragLeave(event, colKey) {
+      const col = document.getElementById(`kanbanCol_${colKey}`);
+      if (col && !col.contains(event.relatedTarget)) {
+        col.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/50');
+      }
+    }
+
+    function handleColDrop(event, colKey) {
+      event.preventDefault();
+      const col = document.getElementById(`kanbanCol_${colKey}`);
+      if (col) {
+        col.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/50');
+      }
+      const taskId = (event.dataTransfer && event.dataTransfer.getData('text/plain')) || currentDraggedTaskId;
+      if (taskId) {
+        moveTaskToWorld(taskId, colKey);
+      }
+    }
+
+    async function moveTaskToWorld(taskId, targetColKey) {
+      const taskIndex = allParsedTasks.findIndex(t => t.id === taskId);
+      if (taskIndex === -1) return;
+      const task = allParsedTasks[taskIndex];
+
+      // Nastavit kategorii a odpovídající tag / badge
+      task.customCategory = targetColKey;
+      let newTag = "INBOX";
+      let newBadge = "bg-slate-100 text-slate-800 border-slate-200";
+
+      if (targetColKey === 'baluo') {
+        newTag = "BALUO • P0";
+        newBadge = "bg-rose-100 text-rose-800 border-rose-200";
+      } else if (targetColKey === 'startitup') {
+        newTag = "STARTITUP • P1";
+        newBadge = "bg-indigo-100 text-indigo-800 border-indigo-200";
+      } else if (targetColKey === 'personal') {
+        newTag = "OSOBNÍ • SPORT";
+        newBadge = "bg-emerald-100 text-emerald-800 border-emerald-200";
+      } else if (targetColKey === 'inbox') {
+        newTag = "INBOX";
+        newBadge = "bg-amber-100 text-amber-800 border-amber-200";
+      }
+
+      task.tag = newTag;
+      task.badgeClass = newBadge;
+
+      // Zápis změny do markdownu
+      if (task.type === 'inbox' && task.rawLine) {
+        const oldLine = task.rawLine;
+        let newLine = oldLine;
+        if (oldLine.match(/^- \[[ x]\]\s*\*\*\[.*?\]\:\*\*/)) {
+          newLine = oldLine.replace(/^- (\[[ x]\])\s*\*\*\[.*?\]\:\*\*/, `- $1 **[${newTag}]:**`);
+        } else {
+          newLine = oldLine.replace(/^- (\[[ x]\])\s*/, `- $1 **[${newTag}]:** `);
+        }
+        if (currentRawMarkdown.includes(oldLine)) {
+          currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+          task.rawLine = newLine;
+        }
+      } else if (task.type === 'table' && task.rawLine) {
+        const oldLine = task.rawLine;
+        let prioCol = "📥 **P2 (Operativa)**";
+        if (targetColKey === 'baluo') prioCol = "🔴 **P0 (Baluo & FTK)**";
+        else if (targetColKey === 'startitup') prioCol = "🚀 **P1 (StartItUp & Zisk)**";
+        else if (targetColKey === 'personal') prioCol = "🟢 **P3 (Osobní & Sport)**";
+
+        const cols = oldLine.split('|');
+        if (cols.length >= 4) {
+          cols[2] = ` ${prioCol} `;
+          const newLine = cols.join('|');
+          if (currentRawMarkdown.includes(oldLine)) {
+            currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+            task.rawLine = newLine;
+          }
+        }
+      }
+
+      // Okamžité překreslení
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+      showKlaraToast(`Klára: Úkol zařazen do ${getColName(targetColKey)}`, getColIcon(targetColKey));
+
+      // Trvalé uložení na GitHub na pozadí
+      const titleSummary = (task.title || "").slice(0, 30);
+      await saveMarkdownToCloud(
+        currentRawMarkdown,
+        `feat(kanban): Přesun "${titleSummary}" do ${targetColKey}`
+      );
+    }
+
 
     function getTimelineTheme(item) {
       const combined = ((item.title || '') + ' ' + (item.prio || '') + ' ' + (item.desc || '')).toLowerCase();
@@ -1349,12 +1585,23 @@
             const firstUrl = extractFirstUrl(t.fullDetail || t.title);
             const formattedTitle = formatRichText(t.title, true);
             const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+            const currentCat = colKey;
 
             const card = document.createElement('div');
-            card.className = `p-3 rounded-xl border bg-white border-slate-200 shadow-2xs hover:border-slate-300 transition-all cursor-pointer select-none active:scale-[0.99] max-w-full overflow-hidden`;
-            card.onclick = () => toggleTaskDetail(t.id);
+            card.id = `card_${t.id}`;
+            card.className = `kanban-card p-3 rounded-xl border bg-white border-slate-200 shadow-2xs hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing select-none active:scale-[0.99] max-w-full overflow-hidden`;
+            card.setAttribute('draggable', 'true');
+            card.ondragstart = (e) => handleCardDragStart(e, t.id);
+            card.ondragend = (e) => handleCardDragEnd(e);
+            card.onclick = () => {
+              if (isDraggingCard) return;
+              toggleTaskDetail(t.id);
+            };
             card.innerHTML = `
               <div class="flex items-start justify-between space-x-2">
+                <div class="flex items-center space-x-1.5 pt-0.5 select-none shrink-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-600 transition-colors" title="Chytit a přetáhnout do jiného sloupce">
+                  <span class="text-xs leading-none font-mono">⠿</span>
+                </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
                     <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${t.badgeClass}">${t.tag}</span>
@@ -1375,9 +1622,20 @@
                 <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
               </div>
 
-              <div id="detail_${t.id}" class="hidden mt-2.5 pt-2 border-t border-slate-100 text-xs text-slate-700 space-y-1.5 max-w-full overflow-hidden">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">📋 Detail zadání:</span>
+              <div id="detail_${t.id}" class="hidden mt-2.5 pt-2 border-t border-slate-100 text-xs text-slate-700 space-y-2 max-w-full overflow-hidden">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">📋 Detail zadání:</span>
                 <div class="text-[11px] text-slate-700 bg-slate-50/90 p-2 rounded-lg border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
+                
+                <!-- Rychlé přetažení / přeřazení jedním klikem (pro mobil i desktop) -->
+                <div class="pt-1.5 flex items-center justify-between flex-wrap gap-1.5" onclick="event.stopPropagation()">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Přesunout:</span>
+                  <div class="flex items-center space-x-1 flex-wrap gap-1">
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'baluo')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'baluo' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'} active:scale-95 transition-all">🔴 Baluo</button>
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'startitup')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'startitup' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'} active:scale-95 transition-all">🚀 StartItUp</button>
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'personal')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'personal' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'} active:scale-95 transition-all">🟢 Osobní</button>
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'inbox')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'inbox' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200'} active:scale-95 transition-all">📥 Inbox</button>
+                  </div>
+                </div>
               </div>
             `;
             container.appendChild(card);
@@ -1407,9 +1665,11 @@
             const firstUrl = extractFirstUrl(t.fullDetail || t.title);
             const formattedTitle = formatRichText(t.title, true);
             const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+            const currentCat = colKey;
 
             const card = document.createElement('div');
-            card.className = `p-2.5 rounded-xl border bg-slate-50/90 border-slate-200 shadow-2xs opacity-60 cursor-pointer select-none max-w-full overflow-hidden`;
+            card.id = `card_${t.id}`;
+            card.className = `kanban-card p-2.5 rounded-xl border bg-slate-50/90 border-slate-200 shadow-2xs opacity-60 cursor-pointer select-none max-w-full overflow-hidden`;
             card.onclick = () => toggleTaskDetail(t.id);
             card.innerHTML = `
               <div class="flex items-start justify-between space-x-2">
@@ -1427,8 +1687,17 @@
                 </div>
                 <input type="checkbox" checked onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
               </div>
-              <div id="detail_${t.id}" class="hidden mt-2 pt-2 border-t border-slate-200 text-xs text-slate-500 max-w-full overflow-hidden">
+              <div id="detail_${t.id}" class="hidden mt-2 pt-2 border-t border-slate-200 text-xs text-slate-500 space-y-2 max-w-full overflow-hidden">
                 <div class="text-[11px] text-slate-600 bg-slate-100 p-2 rounded border border-slate-200 whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
+                <div class="pt-1 flex items-center justify-between flex-wrap gap-1.5" onclick="event.stopPropagation()">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Přesunout:</span>
+                  <div class="flex items-center space-x-1 flex-wrap gap-1">
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'baluo')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'baluo' ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🔴 Baluo</button>
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'startitup')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'startitup' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🚀 StartItUp</button>
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'personal')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'personal' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🟢 Osobní</button>
+                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'inbox')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'inbox' ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">📥 Inbox</button>
+                  </div>
+                </div>
               </div>
             `;
             doneListEl.appendChild(card);
@@ -1693,19 +1962,19 @@
       finalSessionTranscript = '';
     }
 
-    async function submitQuickCaptureHome(mode = 'inbox') {
+    async function submitQuickCaptureHome(mode = 'auto') {
       const input = document.getElementById('quickCaptureInput');
       const val = input.value.trim();
       if (!val) {
-        alert("Nejprve zadej poznámku nebo nadiktuj hlasem.");
+        showKlaraToast("Nejprve zadej poznámku nebo nadiktuj hlasem.", "⚠️");
         return;
       }
       stopVoiceDictation();
       if (mode === 'reflection') {
         await submitReflectionDirect(val);
       } else {
-        const isTask = mode === 'task' || val.toLowerCase().startsWith('úkol') || val.toLowerCase().startsWith('vyřešit');
-        await submitThoughtDirect(val, isTask);
+        const isTask = true;
+        await submitThoughtDirect(val, isTask, mode);
       }
       input.value = "";
     }
@@ -1715,7 +1984,7 @@
       const text = input.value.trim();
       if (!text) return;
       stopVoiceDictation();
-      await submitThoughtDirect(text, false);
+      await submitThoughtDirect(text, true, 'auto');
       input.value = "";
     }
 
@@ -1735,24 +2004,25 @@
       const workingModel = localStorage.getItem('gemini_working_model') || 'gemini-3.8-flash';
       const modelsToTry = [workingModel, 'gemini-1.5-flash', 'gemini-1.5-pro'];
 
-      const prompt = `Jsi špičková osobní AI asistentka a letový dispečer pro Davida Prycla (BDM AC Baluo FTK UP, Transfer Scout, StartItUp).
+      const prompt = `Jsi špičková osobní AI asistentka Klára (Chief of Staff) pro Davida Prycla (BDM AC Baluo FTK UP, Transfer Scout, Co-founder StartItUp.io).
 David ti v běhu z mobilu nadiktoval tento hlasový záznam:
 "${rawText}"
 
-Dnešek je: Pondělí 5. 10. 2026.
+Dnešek je: Úterý 6. 10. 2026.
 Aktuální čas: ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}.
-Davidův dnešní rozvrh:
-- 12:30–14:00: Dokončení 4 Baluo reportů (P0 Finiš)
-- 14:00–16:00: Příprava prezentace pro Děkana Hápa (P1 Strategie)
-- 16:00–16:30: Operativní okno pro hovory a rychlé úkoly (P2 Operativa)
-- 16:30–17:30: Fitness AC Baluo s Pájou Mrnuštíkem (P3 Sport)
 
-Tvůj úkol jako elitní asistentka (Apple Reminders / Executive Assistant styl):
-1. Vytáhni čistý a výstižný název úkolu (cleanTitle, max 6-8 slov, např. 'Vyřešit Tomáše Junka').
-2. Zařaď jej do konkrétního časového slotu podle Davidova dne (timeSlot, např. 'Dnes 16:00 – 16:30' nebo 'Dnes do 14:00' nebo 'Zítra 09:00').
-3. Urči kategorii (category: OPERATIVA | BALUO | STRATEGIE | STARTITUP | OSOBNÍ).
+Davidovy 4 světy a klíčová témata:
+1. BALUO (AC Baluo & FTK UP): Univerzita Palackého, Děkan Jan Háp, Tajoš Král, VTP Suchomel, Karel Hůlka, Sigmund, Botek, FAČR, cestovní příkazy (cesťáky na 14 dní do Chorvatska), klinické studie (ClinicalTrials.gov), klientská diagnostika, fotbal, IGA, transfer technologií.
+2. STARTITUP (StartItUp & Zisk): Tvorba VIP webů pro klienty, automatická VIP továrna, Zbyňa, CRM, konverze, byznys, monetizace, fakturace.
+3. OSOBNÍ (Osobní, Sport & Rodina): Sport, fitness v Baluo s Pájou Mrnuštíkem, manželka Janča (Jana Pryclová), svišti, rodina, Spálov, regenerace, zdraví.
+4. INBOX: Obecné nespecifikované poznámky, které David rozřadí později.
+
+Tvůj úkol jako asistentka Klára:
+1. Vytáhni čistý a výstižný název úkolu (cleanTitle, max 6-8 slov, např. 'Vypsat cesťák Karlovi Hůlkovi do Chorvatska').
+2. Zařaď jej do konkrétního časového slotu podle dne (timeSlot, např. 'Dnes 11:00' nebo 'Dnes dopoledne' nebo 'Dnes 16:30').
+3. Urči kategorii PŘESNĚ podle světů (category: BALUO | STARTITUP | OSOBNÍ | INBOX).
 4. Urči prioritu (priority: P0 | P1 | P2 | P3).
-5. Zachovej detailní kontext a přidej stručné asistentčino doporučení dalšího kroku (details).
+5. Zachovej detailní kontext a přidej stručné doporučení dalšího kroku (details).
 
 Vrať POUZE validní JSON bez markdown značek:
 {
@@ -1786,27 +2056,36 @@ Vrať POUZE validní JSON bez markdown značek:
             }
           }
         } catch (e) {
-          console.warn("Chyba AI dispečera:", e);
+          console.warn("Chyba AI asistentky Kláry:", e);
         }
       }
       return null;
     }
 
-    async function submitThoughtDirect(thought, isTask = false) {
+    async function submitThoughtDirect(thought, isTask = false, mode = 'auto') {
       const ghToken = localStorage.getItem('github_token') || "";
       const nowStr = new Date().toLocaleDateString('cs-CZ') + " " + new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+
+      // Automatická klasifikace Klárou podle klíčových slov
+      const quickClass = klaraClassifyThought(thought);
+      let targetWorld = quickClass;
 
       // 1. Lokální server
       if (activeSyncMode === 'local') {
         try {
+          let localTag = "INBOX";
+          if (targetWorld === 'baluo') localTag = "BALUO • P0";
+          else if (targetWorld === 'startitup') localTag = "STARTITUP • P1";
+          else if (targetWorld === 'personal') localTag = "OSOBNÍ • SPORT";
+
           const res = await fetch('/api/capture', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ thought: thought })
+            body: JSON.stringify({ thought: `**[${localTag}]:** ${thought}` })
           });
           if (res.ok) {
             fetchData();
-            alert("✅ Uloženo do Druhého mozku (Lokální SSOT)");
+            showKlaraToast(`Klára: Zařazeno do ${getColName(targetWorld)} (Lokální)`, getColIcon(targetWorld));
             return;
           }
         } catch(e){}
@@ -1815,17 +2094,28 @@ Vrať POUZE validní JSON bez markdown značek:
       // 2. Cloud GitHub API
       if (ghToken) {
         try {
-          // AI analýza hlasového zadání (Letový dispečer)
           let aiParsed = null;
           if (isTask) {
-            const homeBtn = document.getElementById('homeDictationMicBtn');
-            const oldLabel = homeBtn ? homeBtn.innerHTML : '';
             try {
               aiParsed = await parseVoiceWithGemini(thought);
             } catch (err) {
               console.warn("AI parse skipped:", err);
             }
           }
+
+          if (aiParsed && aiParsed.category) {
+            const catNorm = aiParsed.category.toLowerCase();
+            if (catNorm.includes('baluo') || catNorm.includes('ftk')) targetWorld = 'baluo';
+            else if (catNorm.includes('start') || catNorm.includes('zisk')) targetWorld = 'startitup';
+            else if (catNorm.includes('osob') || catNorm.includes('sport')) targetWorld = 'personal';
+            else if (catNorm.includes('inbox')) targetWorld = 'inbox';
+          }
+
+          let tag = "INBOX";
+          if (targetWorld === 'baluo') tag = "BALUO • P0";
+          else if (targetWorld === 'startitup') tag = "STARTITUP • P1";
+          else if (targetWorld === 'personal') tag = "OSOBNÍ • SPORT";
+          else tag = "INBOX";
 
           // Pokud nemáme SHA nebo markdown, načteme aktuální soubor
           const ghRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/PRIORITIES.md`, {
@@ -1844,15 +2134,13 @@ Vrať POUZE validní JSON bez markdown značek:
           const safeRaw = thought.replace(/\n/g, ' ').replace(/-->/g, '');
 
           if (aiParsed && aiParsed.cleanTitle) {
-            const cat = aiParsed.category || "OPERATIVA";
-            const prio = aiParsed.priority || "P2";
             const slot = aiParsed.timeSlot || "Dnes";
             const det = (aiParsed.details || "").replace(/\n/g, ' ').replace(/-->/g, '');
-            entry = `- [ ] **[${cat} • ${prio}]:** ${aiParsed.cleanTitle} (⏱️ ${slot}) <!-- detail: ${det} | raw: ${safeRaw} -->\n`;
+            entry = `- [ ] **[${tag}]:** ${aiParsed.cleanTitle} (⏱️ ${slot}) <!-- detail: ${det} | raw: ${safeRaw} -->\n`;
           } else {
             entry = isTask 
-              ? `- [ ] **[P2 - OPERATIVA]:** ${thought} (zadáno z mobilu ${nowStr}) <!-- raw: ${safeRaw} -->\n`
-              : `- [ ] **[MOBILNÍ ZÁPIS ${nowStr}]:** ${thought}\n`;
+              ? `- [ ] **[${tag}]:** ${thought} (⏱️ Dnes) <!-- raw: ${safeRaw} -->\n`
+              : `- [ ] **[${tag}]:** ${thought}\n`;
           }
 
           let updatedMd = currentRawMarkdown || "# 🎯 CENTRÁLA PRIORIT & OPERATIVNÍ ŘÍZENÍ (DAVID PRYCL)\n\n## 📥 INBOX & RYCHLÉ ZÁPISY Z MOBILU (Quick Capture)\n";
@@ -1874,7 +2162,7 @@ Vrať POUZE validní JSON bez markdown značek:
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              message: `feat(inbox): ${isTask ? (aiParsed ? aiParsed.cleanTitle : 'Nový úkol') : 'Zápis'} (${nowStr})`,
+              message: `feat(inbox): ${isTask ? (aiParsed ? aiParsed.cleanTitle : 'Nový úkol ' + tag) : 'Zápis'} (${nowStr})`,
               content: encoded,
               sha: currentGitHubSha
             })
@@ -1899,7 +2187,7 @@ Vrať POUZE validní JSON bez markdown značek:
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                  message: `feat(inbox): ${isTask ? 'Nový úkol' : 'Zápis'} (retry)`,
+                  message: `feat(inbox): ${isTask ? 'Nový úkol ' + tag : 'Zápis'} (retry)`,
                   content: encoded,
                   sha: currentGitHubSha
                 })
@@ -1914,21 +2202,18 @@ Vrať POUZE validní JSON bez markdown značek:
             const parsedData = parseMarkdown(updatedMd);
             renderUI(parsedData);
             
-            const msg = aiParsed 
-              ? `🛫 Dispečer zařadil úkol "${aiParsed.cleanTitle}" do plánu dne na ${aiParsed.timeSlot}!`
-              : `✅ ${isTask ? 'Úkol přidán do K řešení' : 'Poznámka uložena do Inboxu'}!`;
-            alert(msg);
+            showKlaraToast(`Klára: Zařazeno do ${getColName(targetWorld)}`, getColIcon(targetWorld));
             return;
           } else {
             const errJson = await putRes.json();
-            alert("Chyba při ukládání: " + (errJson.message || "zkontroluj token"));
+            showKlaraToast("Chyba při ukládání: " + (errJson.message || "zkontroluj token"), "⚠️");
           }
         } catch (err) {
           console.error("Chyba při přímém zápisu na GitHub:", err);
-          alert("Chyba spojení s GitHubem: " + err.message);
+          showKlaraToast("Chyba spojení s GitHubem: " + err.message, "⚠️");
         }
       } else {
-        alert("Chybí GitHub token. Aktivuj Cloud v záložce Cloud.");
+        showKlaraToast("Chybí GitHub token. Aktivuj Cloud v záložce Cloud.", "⚠️");
       }
     }
 
