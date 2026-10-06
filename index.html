@@ -43,7 +43,7 @@
 <body class="text-slate-900 bg-slate-100 flex justify-center min-h-screen p-0 sm:p-4 pb-24">
 
   <!-- Hlavní kontejner kokpitu -->
-  <div class="w-full max-w-md bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl min-h-screen relative flex flex-col">
+  <div class="w-full max-w-md md:max-w-4xl lg:max-w-7xl xl:max-w-[1720px] mx-auto bg-white sm:border sm:border-slate-200 sm:rounded-3xl shadow-xl min-h-screen relative flex flex-col">
 
     <!-- Zabezpečení / Lock Screen Overlay (Pevně přes celou obrazovku) -->
     <div id="lockScreen" class="fixed inset-0 bg-white/99 backdrop-blur-md z-50 flex flex-col items-center justify-between p-6 transition-all duration-300">
@@ -187,56 +187,117 @@
           </div>
         </div>
 
-        <!-- Sekce Úkoly a Priority -->
-        <section class="space-y-3">
-          <div class="flex items-center justify-between mb-1">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">🎯 Priority & Úkoly dne</h2>
-            <span id="completedCounter" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">0/0 splněno</span>
+        <!-- HLAVIČKA NÁSTĚNKY S CELKOVÝM SKÓRE DNE -->
+        <div class="flex items-center justify-between pt-1">
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center space-x-1.5">
+              <span>📋</span>
+              <span>Bojová Trello nástěnka</span>
+            </h2>
+            <p class="text-[11px] text-slate-500">5 světů: Časový stream, Baluo, StartItUp, Osobní & Inbox</p>
           </div>
+          <span id="completedCounter" class="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">0/0 splněno</span>
+        </div>
 
-          <!-- K řešení -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between px-1">
-              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1.5">
-                <span>📋 K řešení</span>
-                <span id="activeCountBadge" class="text-[10px] font-bold px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded-full border border-amber-200">0</span>
-              </span>
-              <span class="text-[10px] text-slate-400">Zaškrtnutím přesuneš do Hotovo</span>
-            </div>
-            <div id="activeTasksList" class="space-y-2">
-              <!-- Dynamicky generované úkoly k řešení -->
-            </div>
-          </div>
+        <!-- Mobilní Segmented Pill Filter pro rychlé přepínání sloupců na telefonu -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1 lg:hidden">
+          <button onclick="setKanbanMobileFilter('all')" id="kmf_all" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-2xs whitespace-nowrap active:scale-95 transition-all">📋 Všechny sloupce</button>
+          <button onclick="setKanbanMobileFilter('timeline')" id="kmf_timeline" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">⏱️ Stream dne</button>
+          <button onclick="setKanbanMobileFilter('baluo')" id="kmf_baluo" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">🔴 Baluo & FTK</button>
+          <button onclick="setKanbanMobileFilter('startitup')" id="kmf_startitup" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">🚀 StartItUp</button>
+          <button onclick="setKanbanMobileFilter('personal')" id="kmf_personal" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">🟢 Osobní</button>
+          <button onclick="setKanbanMobileFilter('inbox')" id="kmf_inbox" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">📥 Inbox</button>
+        </div>
 
-          <!-- Hotovo (Složka s možností znovuotevření) -->
-          <div class="pt-1">
-            <button onclick="toggleCompletedFolder()" class="w-full flex items-center justify-between p-2.5 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-all active:scale-98 shadow-2xs">
+        <!-- HLAVNÍ KANBAN / TRELLO NÁSTĚNKA (5 SLOUPCŮ) -->
+        <div id="kanbanBoardContainer" class="flex lg:grid lg:grid-cols-3 xl:grid-cols-5 gap-3.5 overflow-x-auto pb-4 snap-x snap-mandatory lg:overflow-x-visible items-start no-scrollbar">
+
+          <!-- SLOUPEC 1: ⏱️ ČASOVÝ STREAM DNE -->
+          <div id="kanbanCol_timeline" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-slate-50/80 border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs">
+            <div class="p-3 bg-white border-b border-slate-200 flex items-center justify-between">
               <div class="flex items-center space-x-2">
-                <span class="text-emerald-600">✅</span>
-                <span>Složka Hotovo</span>
-                <span id="completedCountBadge" class="text-[10px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">0</span>
+                <span class="text-base">⏱️</span>
+                <div>
+                  <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">Časový stream dne</h3>
+                  <p class="text-[10px] text-slate-500">Kotvy, sprinty & rozvrh</p>
+                </div>
               </div>
-              <div class="flex items-center space-x-1 text-[11px] text-slate-500 font-normal">
-                <span>Znovuotevřít</span>
-                <span id="completedFolderArrow" class="font-bold text-slate-600 transition-transform">▾</span>
-              </div>
-            </button>
-            <div id="completedTasksList" class="mt-2 space-y-2">
-              <!-- Dynamicky generované hotové úkoly -->
+              <span id="badgeCol_timeline" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">0 bloků</span>
+            </div>
+            <div id="kanbanList_timeline" class="p-2.5 space-y-2.5 min-h-[120px]">
+              <!-- Karty časového streamu -->
             </div>
           </div>
-        </section>
 
-        <!-- Sekce Časová osa dne -->
-        <section>
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Časová osa dne (Kotvy & Bloky)</h2>
-            <span class="text-[10px] text-slate-400">Kalendář + Fokus</span>
+          <!-- SLOUPEC 2: 🔴 AC BALUO & FTK UP -->
+          <div id="kanbanCol_baluo" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-rose-50/20 border border-rose-200/80 rounded-2xl overflow-hidden shadow-2xs">
+            <div class="p-3 bg-rose-50/90 border-b border-rose-200/90 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">🔴</span>
+                <div>
+                  <h3 class="text-xs font-bold text-rose-950 uppercase tracking-wide">AC Baluo & FTK</h3>
+                  <p class="text-[10px] text-rose-700">Klienti, Děkan, VTP & FAČR</p>
+                </div>
+              </div>
+              <span id="badgeCol_baluo" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">0 úkolů</span>
+            </div>
+            <div id="kanbanList_baluo" class="p-2.5 space-y-2.5 min-h-[120px]">
+              <!-- Karty Baluo -->
+            </div>
           </div>
-          <div id="timelineList" class="space-y-2">
-            <!-- Dynamicky generovaná osa -->
+
+          <!-- SLOUPEC 3: 🚀 STARTITUP & ZISK -->
+          <div id="kanbanCol_startitup" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-indigo-50/20 border border-indigo-200/80 rounded-2xl overflow-hidden shadow-2xs">
+            <div class="p-3 bg-indigo-50/90 border-b border-indigo-200/90 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">🚀</span>
+                <div>
+                  <h3 class="text-xs font-bold text-indigo-950 uppercase tracking-wide">StartItUp & Zisk</h3>
+                  <p class="text-[10px] text-indigo-700">VIP Weby, Továrna, CRM & Zbyňa</p>
+                </div>
+              </div>
+              <span id="badgeCol_startitup" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">0 úkolů</span>
+            </div>
+            <div id="kanbanList_startitup" class="p-2.5 space-y-2.5 min-h-[120px]">
+              <!-- Karty StartItUp -->
+            </div>
           </div>
-        </section>
+
+          <!-- SLOUPEC 4: 🟢 OSOBNÍ, SPORT & RODINA -->
+          <div id="kanbanCol_personal" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-emerald-50/20 border border-emerald-200/80 rounded-2xl overflow-hidden shadow-2xs">
+            <div class="p-3 bg-emerald-50/90 border-b border-emerald-200/90 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">🟢</span>
+                <div>
+                  <h3 class="text-xs font-bold text-emerald-950 uppercase tracking-wide">Osobní & Sport</h3>
+                  <p class="text-[10px] text-emerald-700">Fitko s Pájou, Janča, Svišti</p>
+                </div>
+              </div>
+              <span id="badgeCol_personal" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">0 úkolů</span>
+            </div>
+            <div id="kanbanList_personal" class="p-2.5 space-y-2.5 min-h-[120px]">
+              <!-- Karty Osobní & Sport -->
+            </div>
+          </div>
+
+          <!-- SLOUPEC 5: 📥 INBOX & OPERATIVA -->
+          <div id="kanbanCol_inbox" class="kanban-col w-[86vw] sm:w-[350px] shrink-0 snap-start lg:w-auto lg:shrink flex flex-col bg-amber-50/20 border border-amber-200/80 rounded-2xl overflow-hidden shadow-2xs">
+            <div class="p-3 bg-amber-50/90 border-b border-amber-200/90 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">📥</span>
+                <div>
+                  <h3 class="text-xs font-bold text-amber-950 uppercase tracking-wide">Inbox & Rychlé</h3>
+                  <p class="text-[10px] text-amber-700">Nové zápisy z mobilu & nápady</p>
+                </div>
+              </div>
+              <span id="badgeCol_inbox" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">0 úkolů</span>
+            </div>
+            <div id="kanbanList_inbox" class="p-2.5 space-y-2.5 min-h-[120px]">
+              <!-- Karty Inbox -->
+            </div>
+          </div>
+
+        </div>
 
         <!-- Radar týdne -->
         <section>
@@ -436,7 +497,7 @@
     </main>
 
     <!-- Spodní Navigační Lišta (Tabs) - Pevně přilepená k obrazovce (fixed), vždy 100% viditelná -->
-    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 z-40 bg-white/98 border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] backdrop-blur max-w-md mx-auto">
+    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 z-40 bg-white/98 border-t border-slate-200 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] backdrop-blur max-w-md md:max-w-4xl lg:max-w-7xl xl:max-w-[1720px] mx-auto">
       <div class="flex items-center justify-around py-2 px-2 pb-[max(0.6rem,env(safe-area-inset-bottom))]">
         <button onclick="switchTab('mission')" id="navBtnMission" class="flex flex-col items-center text-indigo-600 transition-colors py-1 px-3 rounded-xl active:scale-95">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
@@ -716,20 +777,69 @@
     // PARSER & DATA ENGINE (DYNAMICKÝ SSOT)
     // ==========================================
     let allParsedTasks = [];
-    let isCompletedFolderOpen = true;
+    let currentParsedTimeline = [];
+    let currentMobileFilter = 'all';
+    const colDoneOpen = { baluo: false, startitup: false, personal: false, inbox: false };
 
-    function toggleCompletedFolder() {
-      isCompletedFolderOpen = !isCompletedFolderOpen;
-      const list = document.getElementById('completedTasksList');
-      const arrow = document.getElementById('completedFolderArrow');
+    function toggleColDone(colKey) {
+      colDoneOpen[colKey] = !colDoneOpen[colKey];
+      const list = document.getElementById(`colDoneList_${colKey}`);
+      const arrow = document.getElementById(`colDoneArrow_${colKey}`);
       if (list) {
-        if (isCompletedFolderOpen) {
+        if (colDoneOpen[colKey]) {
           list.classList.remove('hidden');
-          if (arrow) arrow.innerText = '▾';
+          if (arrow) arrow.innerText = '▴';
         } else {
           list.classList.add('hidden');
-          if (arrow) arrow.innerText = '▸';
+          if (arrow) arrow.innerText = '▾';
         }
+      }
+    }
+
+    function setKanbanMobileFilter(filter) {
+      currentMobileFilter = filter;
+      
+      // 1. Styl aktivní pilulky
+      document.querySelectorAll('.kmf-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-2xs');
+        btn.classList.add('bg-white', 'text-slate-700', 'border', 'border-slate-200');
+      });
+      const activeBtn = document.getElementById(`kmf_${filter}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-slate-700', 'border', 'border-slate-200');
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-2xs');
+      }
+
+      // 2. Sloupce
+      const cols = ['timeline', 'baluo', 'startitup', 'personal', 'inbox'];
+      const container = document.getElementById('kanbanBoardContainer');
+      
+      if (filter === 'all') {
+        if (container) {
+          container.classList.add('flex', 'overflow-x-auto', 'snap-x');
+        }
+        cols.forEach(colKey => {
+          const el = document.getElementById(`kanbanCol_${colKey}`);
+          if (el) {
+            el.classList.remove('hidden');
+            el.classList.add('w-[86vw]', 'sm:w-[350px]', 'shrink-0', 'snap-start');
+          }
+        });
+      } else {
+        if (container) {
+          container.classList.remove('flex', 'overflow-x-auto', 'snap-x');
+        }
+        cols.forEach(colKey => {
+          const el = document.getElementById(`kanbanCol_${colKey}`);
+          if (el) {
+            if (colKey === filter) {
+              el.classList.remove('hidden', 'w-[86vw]', 'sm:w-[350px]', 'shrink-0', 'snap-start');
+              el.classList.add('w-full');
+            } else {
+              el.classList.add('hidden');
+            }
+          }
+        });
       }
     }
 
@@ -794,10 +904,10 @@
       // 3. Sestavení sjednoceného seznamu všech úkolů (z Rozvrhu i Inboxu)
       const tasks = [];
 
-      // A) Úkoly z časového rozvrhu (vyjma pauzy a regenerace)
+      // A) Úkoly z časového rozvrhu (vyjma pauzy, oběda a večera)
       timeline.forEach((item, idx) => {
         const titleLower = item.title.toLowerCase();
-        if (titleLower.includes('oběd') || titleLower.includes('pauza') || titleLower.includes('regenerace')) return;
+        if (titleLower.includes('oběd') || titleLower.includes('pauza') || titleLower.includes('regenerace') || titleLower.includes('večer') || titleLower.includes('rodin')) return;
         
         let tag = "BALUO • P0";
         let badgeClass = "bg-rose-100 text-rose-800 border-rose-200";
@@ -911,6 +1021,13 @@
       });
 
       allParsedTasks = tasks;
+      currentParsedTimeline = timeline;
+
+      let detectedDate = "Úterý 6. října 2026";
+      const dateMatch = md.match(/## ⚡ BOJOVÝ PLÁN:\s*([^\(\n]+)/i);
+      if (dateMatch) {
+        detectedDate = dateMatch[1].trim();
+      }
 
       const radar = [
         { day: "Středa 13:30", title: "👑 Summit: Děkan Háp + Tajoš Král + Suchomel (VTP)", desc: "Jednotná diagnostika AC FTK (1. 1. 2027), finance a smluvní výzkum!", highlight: true },
@@ -919,7 +1036,7 @@
       ];
 
       return {
-        date: "Pondělí 5. října 2026",
+        date: detectedDate,
         tasks: tasks,
         timeline: timeline,
         radar: radar,
@@ -991,29 +1108,8 @@
     function renderUI(data) {
       if (data.date) document.getElementById('headerDate').innerText = data.date;
 
-      // Vykreslit rozdělené úkoly (K řešení vs Hotovo)
-      renderTasksLists(allParsedTasks);
-
-      // Vykreslit časovou osu dne
-      const timelineContainer = document.getElementById('timelineList');
-      if (timelineContainer && data.timeline) {
-        timelineContainer.innerHTML = '';
-        data.timeline.forEach(item => {
-          const el = document.createElement('div');
-          el.className = `p-3 rounded-xl border ${item.bg} flex items-start space-x-3 transition-all`;
-          el.innerHTML = `
-            <div class="shrink-0 w-24">
-              <span class="text-xs font-mono font-bold text-slate-800 block">${item.time}</span>
-              <span class="text-[9px] font-bold uppercase tracking-tight text-slate-500 block mt-0.5">${item.status || item.prio}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs font-bold text-slate-900 leading-snug break-words">${item.title}</p>
-              ${item.desc ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words">${item.desc}</p>` : ''}
-            </div>
-          `;
-          timelineContainer.appendChild(el);
-        });
-      }
+      // Vykreslit 5sloupcovou Trello nástěnku
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
 
       // Vykreslit radar
       const radarContainer = document.getElementById('radarList');
@@ -1091,137 +1187,295 @@
       return match[1].replace(/[\.,\)]+$/, '');
     }
 
-    function renderTasksLists(tasks) {
-      const activeContainer = document.getElementById('activeTasksList');
-      const completedContainer = document.getElementById('completedTasksList');
-      if (!activeContainer || !completedContainer) return;
+    function getTaskCategory(task) {
+      const combined = ((task.tag || '') + ' ' + (task.title || '') + ' ' + (task.fullDetail || '')).toLowerCase();
+      
+      // 1. Osobní & Sport & Rodina
+      if (combined.includes('sport') || combined.includes('osobní') || combined.includes('fitness') || combined.includes('fitko') || combined.includes('janč') || combined.includes('rodina') || combined.includes('svišti') || combined.includes('pája') || combined.includes('andrejk') || combined.includes('spálov')) {
+        return 'personal';
+      }
+      
+      // 2. StartItUp & Zisk
+      if (combined.includes('startitup') || combined.includes('nastartujto') || combined.includes('vip web') || combined.includes('zbyň') || combined.includes('klára') || combined.includes('továrn') || combined.includes('obsah.ai') || combined.includes('gamifiter')) {
+        return 'startitup';
+      }
+      
+      // 3. AC Baluo & FTK UP
+      if (combined.includes('baluo') || combined.includes('děkan') || combined.includes('háp') || combined.includes('vtp') || combined.includes('suchomel') || combined.includes('král') || combined.includes('sigmund') || combined.includes('botek') || combined.includes('fačr') || combined.includes('hůlka') || combined.includes('klientsk') || combined.includes('reprezent') || combined.includes('dygrýn') || combined.includes('iga') || combined.includes('klinick')) {
+        return 'baluo';
+      }
+      
+      // 4. Inbox & Rychlá operativa
+      return 'inbox';
+    }
 
-      activeContainer.innerHTML = '';
-      completedContainer.innerHTML = '';
+    function getTimelineTheme(item) {
+      const combined = ((item.title || '') + ' ' + (item.prio || '') + ' ' + (item.desc || '')).toLowerCase();
+      
+      if (combined.includes('fitness') || combined.includes('sport') || combined.includes('osobní') || combined.includes('rodina') || combined.includes('večer')) {
+        return {
+          borderLeft: 'border-l-4 border-l-emerald-500',
+          bg: 'bg-emerald-50/40 border-emerald-200',
+          badge: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          label: 'SPORT / RESET'
+        };
+      }
+      if (combined.includes('startitup') || combined.includes('vip web') || combined.includes('zbyň') || combined.includes('továrn')) {
+        return {
+          borderLeft: 'border-l-4 border-l-indigo-500',
+          bg: 'bg-indigo-50/40 border-indigo-200',
+          badge: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+          label: 'STARTITUP • ZISK'
+        };
+      }
+      if (combined.includes('summit') || combined.includes('děkan') || combined.includes('háp') || combined.includes('král') || combined.includes('suchomel') || combined.includes('prezentace')) {
+        return {
+          borderLeft: 'border-l-4 border-l-purple-500',
+          bg: 'bg-purple-50/40 border-purple-200',
+          badge: 'bg-purple-100 text-purple-800 border-purple-200',
+          label: 'STRATEGIE • SUMMIT'
+        };
+      }
+      if (combined.includes('baluo') || combined.includes('klientsk') || combined.includes('report') || combined.includes('fačr')) {
+        return {
+          borderLeft: 'border-l-4 border-l-rose-500',
+          bg: 'bg-rose-50/40 border-rose-200',
+          badge: 'bg-rose-100 text-rose-800 border-rose-200',
+          label: 'BALUO • KLIENTI'
+        };
+      }
+      if (combined.includes('oběd') || combined.includes('pauza') || combined.includes('regenerace')) {
+        return {
+          borderLeft: 'border-l-4 border-l-amber-500',
+          bg: 'bg-amber-50/40 border-amber-200',
+          badge: 'bg-amber-100 text-amber-800 border-amber-200',
+          label: 'RESET & OBĚD'
+        };
+      }
+      return {
+        borderLeft: 'border-l-4 border-l-slate-400',
+        bg: 'bg-slate-50 border-slate-200',
+        badge: 'bg-slate-100 text-slate-700 border-slate-200',
+        label: 'OPERATIVA'
+      };
+    }
 
-      const activeTasks = [];
-      const completedTasks = [];
+    function renderKanbanBoard(tasks, timeline) {
+      // 1. SLOUPEC: ČASOVÝ STREAM DNE
+      const timelineCol = document.getElementById('kanbanList_timeline');
+      const badgeTimeline = document.getElementById('badgeCol_timeline');
+      if (timelineCol && timeline) {
+        timelineCol.innerHTML = '';
+        let doneTimelineCount = 0;
+        timeline.forEach((item, idx) => {
+          if (item.completed) doneTimelineCount++;
+          const theme = getTimelineTheme(item);
+          const isDone = item.completed;
+          const isCurrent = item.isCurrent && !isDone;
+
+          const card = document.createElement('div');
+          card.className = `p-3 rounded-xl border ${theme.borderLeft} ${theme.bg} shadow-2xs transition-all relative ${isDone ? 'opacity-60' : ''}`;
+          card.innerHTML = `
+            <div class="flex items-start justify-between space-x-2">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${theme.badge}">${theme.label}</span>
+                  <span class="text-[10px] font-mono font-bold text-slate-800">${item.time}</span>
+                  ${isCurrent ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-600 text-white animate-pulse">PRÁVĚ BĚŽÍ</span>' : ''}
+                </div>
+                <h4 class="text-xs font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'} leading-snug break-words">${item.title}</h4>
+                ${item.desc ? `<p class="text-[11px] text-slate-600 mt-1 leading-snug break-words">${item.desc}</p>` : ''}
+                ${item.status ? `<div class="mt-1.5 flex items-center space-x-1 text-[10px] font-semibold text-slate-500"><span>Status:</span> <span class="text-slate-700">${item.status}</span></div>` : ''}
+              </div>
+              <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTimelineBlock(${idx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0" title="${isDone ? 'Znovuotevřít blok' : 'Označit blok za splněný'}">
+            </div>
+          `;
+          timelineCol.appendChild(card);
+        });
+        if (badgeTimeline) badgeTimeline.innerText = `${doneTimelineCount}/${timeline.length} bloků`;
+      }
+
+      // 2. ROZDĚLENÍ ÚKOLŮ DO 4 SVĚTŮ
+      const worlds = {
+        baluo: { active: [], completed: [], elId: 'kanbanList_baluo', badgeId: 'badgeCol_baluo' },
+        startitup: { active: [], completed: [], elId: 'kanbanList_startitup', badgeId: 'badgeCol_startitup' },
+        personal: { active: [], completed: [], elId: 'kanbanList_personal', badgeId: 'badgeCol_personal' },
+        inbox: { active: [], completed: [], elId: 'kanbanList_inbox', badgeId: 'badgeCol_inbox' }
+      };
+
+      let totalTasksCount = tasks.length;
+      let totalCompletedTasksCount = 0;
 
       tasks.forEach((t, origIdx) => {
+        if (t.completed) totalCompletedTasksCount++;
+        const cat = getTaskCategory(t);
+        const target = worlds[cat] || worlds.inbox;
         if (t.completed) {
-          completedTasks.push({ task: t, origIdx: origIdx });
+          target.completed.push({ task: t, origIdx });
         } else {
-          activeTasks.push({ task: t, origIdx: origIdx });
+          target.active.push({ task: t, origIdx });
         }
       });
 
-      // Aktualizace čítačů
-      const activeBadge = document.getElementById('activeCountBadge');
-      const compBadge = document.getElementById('completedCountBadge');
+      // Celkový counter nahoře
       const compCounter = document.getElementById('completedCounter');
-
-      if (activeBadge) activeBadge.innerText = activeTasks.length;
-      if (compBadge) compBadge.innerText = completedTasks.length;
-      if (compCounter) compCounter.innerText = `${completedTasks.length}/${tasks.length} splněno`;
-
-      // 1. Vykreslit Aktivní úkoly (K řešení)
-      if (activeTasks.length === 0) {
-        activeContainer.innerHTML = `
-          <div class="p-4 bg-emerald-50/60 border border-dashed border-emerald-200 rounded-2xl text-center text-xs text-emerald-800 font-medium">
-            🎉 Skvělá práce Davide! Všechny naplánované úkoly jsou hotové.
-          </div>
-        `;
-      } else {
-        activeTasks.forEach(({ task: t, origIdx }) => {
-          const firstUrl = extractFirstUrl(t.fullDetail || t.title);
-          const formattedTitle = formatRichText(t.title, true);
-          const formattedDetail = formatRichText(t.fullDetail || t.title, false);
-
-          const card = document.createElement('div');
-          card.className = `p-3.5 rounded-2xl border ${t.bgCard || 'bg-white border-slate-200'} shadow-2xs transition-all cursor-pointer select-none active:scale-[0.99] max-w-full overflow-hidden`;
-          card.onclick = () => toggleTaskDetail(t.id);
-          card.innerHTML = `
-            <div class="flex items-start justify-between space-x-2.5">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
-                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border ${t.badgeClass}">${t.tag}</span>
-                  ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
-                  <span class="text-[9px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">🔍 Detail</span>
-                </div>
-                <h3 class="text-xs font-bold text-slate-900 leading-snug break-words break-all [overflow-wrap:anywhere]">${formattedTitle}</h3>
-                ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-1">${t.subtitle}</p>` : ''}
-                ${firstUrl ? `
-                  <div class="mt-2.5 flex items-center space-x-2" onclick="event.stopPropagation()">
-                    <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all">
-                      <span>🌐</span>
-                      <span>Otevřít odkaz v prohlížeči</span>
-                      <svg class="w-3.5 h-3.5 inline ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>
-                  </div>
-                ` : ''}
-              </div>
-              <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
-            </div>
-
-            <!-- Rozklikávací detailní karta (Apple Reminders styl) -->
-            <div id="detail_${t.id}" class="hidden mt-3 pt-2.5 border-t border-slate-200/80 text-xs text-slate-700 space-y-2 max-w-full overflow-hidden">
-              <div class="max-w-full overflow-hidden">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">📋 Detailní zadání & Hlasový přepis:</span>
-                <div class="text-[11px] text-slate-700 bg-slate-50/90 p-2.5 rounded-xl border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
-              </div>
-              <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                <span>⏱️ Plánovaný slot: <b>${t.time || 'Dnes'}</b></span>
-                <span class="text-[10px] font-medium text-indigo-600 font-mono">${t.type === 'table' ? 'Rozvrh dne' : 'Inbox'}</span>
-              </div>
-            </div>
-          `;
-          activeContainer.appendChild(card);
-        });
+      if (compCounter) {
+        compCounter.innerText = `${totalCompletedTasksCount}/${totalTasksCount} splněno`;
       }
 
-      // 2. Vykreslit Hotové úkoly (Složka Hotovo)
-      if (completedTasks.length === 0) {
-        completedContainer.innerHTML = `
-          <div class="p-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs text-slate-400 italic text-center">
-            Zatím žádné splněné úkoly.
-          </div>
-        `;
-      } else {
-        completedTasks.forEach(({ task: t, origIdx }) => {
-          const firstUrl = extractFirstUrl(t.fullDetail || t.title);
-          const formattedTitle = formatRichText(t.title, true);
-          const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+      // Vykreslení každého ze 4 sloupců
+      Object.keys(worlds).forEach(colKey => {
+        const colData = worlds[colKey];
+        const container = document.getElementById(colData.elId);
+        const badge = document.getElementById(colData.badgeId);
 
-          const card = document.createElement('div');
-          card.className = `p-3 rounded-2xl border bg-slate-50/80 border-slate-200 shadow-2xs transition-all opacity-60 cursor-pointer select-none max-w-full overflow-hidden`;
-          card.onclick = () => toggleTaskDetail(t.id);
-          card.innerHTML = `
-            <div class="flex items-start justify-between space-x-2.5">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
-                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border border-slate-300 bg-slate-200/60 text-slate-600">${t.tag}</span>
-                  ${t.time ? `<span class="text-[10px] font-mono text-slate-400 font-bold">${t.time}</span>` : ''}
-                </div>
-                <h3 class="text-xs font-bold text-slate-500 line-through leading-snug break-words break-all [overflow-wrap:anywhere]">${formattedTitle}</h3>
-                <p class="text-[10px] text-emerald-700 font-semibold mt-0.5">✓ Splněno (odškrtnutím znovuotevřeš)</p>
-                ${firstUrl ? `
-                  <div class="mt-2 flex items-center space-x-2" onclick="event.stopPropagation()">
-                    <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all">
-                      <span>🌐</span>
-                      <span>Otevřít odkaz</span>
-                      <svg class="w-3 h-3 inline ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>
+        if (badge) {
+          const activeLen = colData.active.length;
+          const compLen = colData.completed.length;
+          badge.innerText = `${compLen}/${activeLen + compLen} hotovo`;
+        }
+
+        if (!container) return;
+        container.innerHTML = '';
+
+        // A) Aktivní úkoly
+        if (colData.active.length === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'p-3 bg-white/70 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 italic';
+          emptyDiv.innerText = colData.completed.length > 0 ? '✓ Všechny úkoly ve sloupci splněny' : 'Žádné úkoly k řešení';
+          container.appendChild(emptyDiv);
+        } else {
+          colData.active.forEach(({ task: t, origIdx }) => {
+            const firstUrl = extractFirstUrl(t.fullDetail || t.title);
+            const formattedTitle = formatRichText(t.title, true);
+            const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+
+            const card = document.createElement('div');
+            card.className = `p-3 rounded-xl border bg-white border-slate-200 shadow-2xs hover:border-slate-300 transition-all cursor-pointer select-none active:scale-[0.99] max-w-full overflow-hidden`;
+            card.onclick = () => toggleTaskDetail(t.id);
+            card.innerHTML = `
+              <div class="flex items-start justify-between space-x-2">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${t.badgeClass}">${t.tag}</span>
+                    ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
                   </div>
-                ` : ''}
+                  <h4 class="text-xs font-bold text-slate-900 leading-snug break-words break-all [overflow-wrap:anywhere]">${formattedTitle}</h4>
+                  ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-1">${t.subtitle}</p>` : ''}
+                  ${firstUrl ? `
+                    <div class="mt-2 flex items-center space-x-1.5" onclick="event.stopPropagation()">
+                      <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all">
+                        <span>🌐</span>
+                        <span>Otevřít odkaz</span>
+                        <svg class="w-3 h-3 inline ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                      </a>
+                    </div>
+                  ` : ''}
+                </div>
+                <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
               </div>
-              <input type="checkbox" checked onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-5 h-5 mt-0.5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
-            </div>
 
-            <div id="detail_${t.id}" class="hidden mt-3 pt-2.5 border-t border-slate-200/80 text-xs text-slate-500 space-y-2 max-w-full overflow-hidden">
-              <div class="max-w-full overflow-hidden">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">📋 Splněný úkol:</span>
-                <div class="text-[11px] text-slate-600 bg-slate-100/70 p-2 rounded-xl border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
+              <div id="detail_${t.id}" class="hidden mt-2.5 pt-2 border-t border-slate-100 text-xs text-slate-700 space-y-1.5 max-w-full overflow-hidden">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">📋 Detail zadání:</span>
+                <div class="text-[11px] text-slate-700 bg-slate-50/90 p-2 rounded-lg border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
               </div>
-            </div>
+            `;
+            container.appendChild(card);
+          });
+        }
+
+        // B) Hotové úkoly (Sbalovací složka pro každý sloupec)
+        if (colData.completed.length > 0) {
+          const isOpen = colDoneOpen[colKey];
+          const doneWrapper = document.createElement('div');
+          doneWrapper.className = 'pt-1';
+          doneWrapper.innerHTML = `
+            <button onclick="toggleColDone('${colKey}')" class="w-full flex items-center justify-between p-2 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 transition-all active:scale-98">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Hotovo ve sloupci</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">${colData.completed.length}</span>
+              </div>
+              <span id="colDoneArrow_${colKey}" class="text-slate-500 font-bold">${isOpen ? '▴' : '▾'}</span>
+            </button>
+            <div id="colDoneList_${colKey}" class="${isOpen ? '' : 'hidden'} mt-2 space-y-2"></div>
           `;
-          completedContainer.appendChild(card);
-        });
+          container.appendChild(doneWrapper);
+
+          const doneListEl = doneWrapper.querySelector(`#colDoneList_${colKey}`);
+          colData.completed.forEach(({ task: t, origIdx }) => {
+            const firstUrl = extractFirstUrl(t.fullDetail || t.title);
+            const formattedTitle = formatRichText(t.title, true);
+            const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+
+            const card = document.createElement('div');
+            card.className = `p-2.5 rounded-xl border bg-slate-50/90 border-slate-200 shadow-2xs opacity-60 cursor-pointer select-none max-w-full overflow-hidden`;
+            card.onclick = () => toggleTaskDetail(t.id);
+            card.innerHTML = `
+              <div class="flex items-start justify-between space-x-2">
+                <div class="flex-1 min-w-0">
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border border-slate-300 bg-slate-200 text-slate-600">${t.tag}</span>
+                  <h4 class="text-xs font-bold text-slate-500 line-through leading-snug break-words break-all [overflow-wrap:anywhere] mt-1">${formattedTitle}</h4>
+                  ${firstUrl ? `
+                    <div class="mt-1.5 flex items-center space-x-1.5" onclick="event.stopPropagation()">
+                      <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-[10px] rounded shadow-2xs">
+                        <span>🌐</span>
+                        <span>Otevřít odkaz</span>
+                      </a>
+                    </div>
+                  ` : ''}
+                </div>
+                <input type="checkbox" checked onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
+              </div>
+              <div id="detail_${t.id}" class="hidden mt-2 pt-2 border-t border-slate-200 text-xs text-slate-500 max-w-full overflow-hidden">
+                <div class="text-[11px] text-slate-600 bg-slate-100 p-2 rounded border border-slate-200 whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
+              </div>
+            `;
+            doneListEl.appendChild(card);
+          });
+        }
+      });
+    }
+
+    async function toggleTimelineBlock(timelineIdx, isChecked) {
+      const item = currentParsedTimeline[timelineIdx];
+      if (!item || !item.rawLine) return;
+
+      item.completed = isChecked;
+      const oldLine = item.rawLine;
+      let newLine = oldLine;
+
+      if (isChecked) {
+        newLine = oldLine.replace(/\|\s*(?:⏳|📅|🎯|🔴|🟡|🟢|👑)[^|]*\|\s*$/, '| ✅ **HOTOVO** |');
+        if (newLine === oldLine) {
+          newLine = oldLine.replace(/\|\s*[^|]*\|\s*$/, '| ✅ **HOTOVO** |');
+        }
+      } else {
+        newLine = oldLine.replace(/\|\s*✅\s*\*\*HOTOVO\*\*\s*\|\s*$/, '| ⏳ **TEĎ** |');
+        if (newLine === oldLine) {
+          newLine = oldLine.replace(/\|\s*[^|]*\|\s*$/, '| ⏳ **TEĎ** |');
+        }
       }
+
+      if (currentRawMarkdown.includes(oldLine)) {
+        currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+        item.rawLine = newLine;
+      }
+
+      // Synchronizovat i s allParsedTasks
+      allParsedTasks.forEach(t => {
+        if (t.rawLine === oldLine) {
+          t.completed = isChecked;
+          t.rawLine = newLine;
+        }
+      });
+
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+
+      await saveMarkdownToCloud(
+        currentRawMarkdown,
+        `feat(timeline): ${isChecked ? 'Splněn blok' : 'Znovuotevřen blok'} - ${(item.title || "").slice(0, 30)}`
+      );
     }
 
     function toggleTaskDetail(taskId) {
@@ -1263,10 +1517,17 @@
           currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
           task.rawLine = newLine;
         }
+        // Synchronizovat i v currentParsedTimeline
+        currentParsedTimeline.forEach(tl => {
+          if (tl.rawLine === oldLine) {
+            tl.completed = isChecked;
+            tl.rawLine = newLine;
+          }
+        });
       }
 
       // 2. Blesková aktualizace UI bez čekání
-      renderTasksLists(allParsedTasks);
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
 
       // 3. Trvalé uložení do Cloudu na GitHub
       const titleSummary = (task.title || "").slice(0, 30);
