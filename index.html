@@ -965,10 +965,13 @@
         // Vytáhnout detailní přepis a komentáře <!-- detail: ... -->
         let fullDetail = "";
         const detailMatch = item.rawLine.match(/<!-- detail:\s*([\s\S]*?)\s*-->/);
+        const rawOnlyMatch = item.rawLine.match(/<!--\s*raw:\s*([\s\S]*?)\s*-->/);
         if (detailMatch) {
-          fullDetail = detailMatch[1].replace(/\|\s*raw:\s*/, '\n\n🎙️ Přepis hlasovky: ');
+          fullDetail = detailMatch[1].replace(/\|\s*raw:\s*/, '\n\n🎙️ Původní hlasovka: ');
+        } else if (rawOnlyMatch) {
+          fullDetail = `🎙️ Původní hlasovka:\n${rawOnlyMatch[1].trim()}`;
         } else {
-          fullDetail = item.text;
+          fullDetail = item.text.replace(/<!--[\s\S]*?-->/g, '').replace(/^\*\*\[.*?\]\:\*\*\s*/, '').trim();
         }
 
         // Očistit text od HTML komentářů
@@ -1444,6 +1447,168 @@
       );
     }
 
+    // ==========================================
+    // EDITACE ÚKOLŮ A KARET (INLINE EDITOR)
+    // ==========================================
+    let editingTaskId = null;
+
+    function openEditCard(taskId) {
+      editingTaskId = taskId;
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+      setTimeout(() => {
+        const input = document.getElementById(`editTitle_${taskId}`);
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 50);
+    }
+
+    function cancelEditCard(taskId) {
+      editingTaskId = null;
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+    }
+
+    async function saveEditCard(taskId) {
+      const taskIndex = allParsedTasks.findIndex(t => t.id === taskId);
+      if (taskIndex === -1) return;
+      const task = allParsedTasks[taskIndex];
+
+      const titleInput = document.getElementById(`editTitle_${taskId}`);
+      const timeInput = document.getElementById(`editTime_${taskId}`);
+      const catInput = document.getElementById(`editCat_${taskId}`);
+      const detailInput = document.getElementById(`editDetail_${taskId}`);
+
+      const newTitle = titleInput ? titleInput.value.trim() : task.title;
+      const newTime = timeInput ? timeInput.value.trim() : (task.time || '');
+      const newCat = catInput ? catInput.value : getTaskCategory(task);
+      const newDetail = detailInput ? detailInput.value.trim() : '';
+
+      if (!newTitle) {
+        showKlaraToast("Název úkolu nesmí být prázdný!", "⚠️");
+        return;
+      }
+
+      // 1. Zjistit nový tag a badge
+      let newTag = "INBOX";
+      let newBadge = "bg-slate-100 text-slate-800 border-slate-200";
+      if (newCat === 'baluo') {
+        newTag = "BALUO • P0";
+        newBadge = "bg-rose-100 text-rose-800 border-rose-200";
+      } else if (newCat === 'startitup') {
+        newTag = "STARTITUP • P1";
+        newBadge = "bg-indigo-100 text-indigo-800 border-indigo-200";
+      } else if (newCat === 'personal') {
+        newTag = "OSOBNÍ • SPORT";
+        newBadge = "bg-emerald-100 text-emerald-800 border-emerald-200";
+      } else if (newCat === 'inbox') {
+        newTag = "INBOX";
+        newBadge = "bg-amber-100 text-amber-800 border-amber-200";
+      }
+
+      task.title = newTitle;
+      task.time = newTime;
+      task.subtitle = newTime ? `⏱️ ${newTime}` : (task.completed ? "Dokončeno" : "K vyřešení dnes");
+      task.fullDetail = newDetail || newTitle;
+      task.customCategory = newCat;
+      task.tag = newTag;
+      task.badgeClass = newBadge;
+
+      // 2. Aktualizace v markdownu
+      if (task.type === 'inbox' && task.rawLine) {
+        const oldLine = task.rawLine;
+        const isDone = task.completed;
+        const safeDetail = newDetail.replace(/\n/g, ' ').replace(/-->/g, '');
+        let newLine = `- [${isDone ? 'x' : ' '}] **[${newTag}]:** ${newTitle}`;
+        if (newTime) {
+          newLine += ` (⏱️ ${newTime})`;
+        }
+        if (safeDetail) {
+          newLine += ` <!-- detail: ${safeDetail} -->`;
+        }
+        if (currentRawMarkdown.includes(oldLine)) {
+          currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+          task.rawLine = newLine;
+        }
+      } else if (task.type === 'table' && task.rawLine) {
+        const oldLine = task.rawLine;
+        let prioCol = "📥 **P2 (Operativa)**";
+        if (newCat === 'baluo') prioCol = "🔴 **P0 (Baluo & FTK)**";
+        else if (newCat === 'startitup') prioCol = "🚀 **P1 (StartItUp & Zisk)**";
+        else if (newCat === 'personal') prioCol = "🟢 **P3 (Osobní & Sport)**";
+
+        const cols = oldLine.split('|');
+        if (cols.length >= 5) {
+          if (newTime) cols[1] = ` **${newTime}** `;
+          cols[2] = ` ${prioCol} `;
+          cols[3] = ` **${newTitle}** `;
+          if (newDetail) cols[4] = ` ${newDetail} `;
+          const newLine = cols.join('|');
+          if (currentRawMarkdown.includes(oldLine)) {
+            currentRawMarkdown = currentRawMarkdown.replace(oldLine, newLine);
+            task.rawLine = newLine;
+          }
+        }
+      }
+
+      editingTaskId = null;
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+      showKlaraToast("Klára: Úkol upraven a uložen ✓", "💾");
+
+      const titleSummary = newTitle.slice(0, 30);
+      await saveMarkdownToCloud(
+        currentRawMarkdown,
+        `feat(tasks): Úprava úkolu "${titleSummary}"`
+      );
+    }
+
+    async function deleteCardTask(taskId) {
+      const taskIndex = allParsedTasks.findIndex(t => t.id === taskId);
+      if (taskIndex === -1) return;
+      const task = allParsedTasks[taskIndex];
+
+      if (!confirm(`Opravdu chceš smazat úkol "${task.title}"?`)) return;
+
+      if (task.rawLine && currentRawMarkdown.includes(task.rawLine)) {
+        const lines = currentRawMarkdown.split('\n');
+        const filtered = lines.filter(l => l.trim() !== task.rawLine.trim());
+        currentRawMarkdown = filtered.join('\n');
+      }
+
+      allParsedTasks.splice(taskIndex, 1);
+      editingTaskId = null;
+      renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+      showKlaraToast("Klára: Úkol byl smazán", "🗑️");
+
+      await saveMarkdownToCloud(
+        currentRawMarkdown,
+        `feat(tasks): Smazán úkol "${(task.title || '').slice(0, 30)}"`
+      );
+    }
+
+    function formatDetailDisplay(rawDetail, title) {
+      if (!rawDetail) return '<span class="text-slate-400 italic">Žádné doplňující podrobnosti</span>';
+
+      let clean = rawDetail
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\*\*\[.*?\]\:\*\*\s*/, '')
+        .replace(/^\[.*?\]\:\s*/, '')
+        .trim();
+
+      // Extrahovat původní hlasovku z <!-- raw: ... -->
+      const rawVoiceMatch = rawDetail.match(/<!--\s*raw:\s*([\s\S]*?)\s*-->/);
+      let rawVoiceSection = '';
+      if (rawVoiceMatch && rawVoiceMatch[1].trim()) {
+        const rawText = rawVoiceMatch[1].trim();
+        if (rawText !== clean && !clean.includes(rawText)) {
+          rawVoiceSection = `<div class="mt-2 pt-1.5 border-t border-slate-200/60 text-[10px] text-slate-500 font-normal">🎙️ <b>Původní hlasovka:</b> <i>"${escapeHtml(rawText)}"</i></div>`;
+        }
+      }
+
+      let formatted = formatRichText(clean, false);
+      return (formatted || '<span class="text-slate-400 italic">Žádné doplňující podrobnosti</span>') + rawVoiceSection;
+    }
+
 
     function getTimelineTheme(item) {
       const combined = ((item.title || '') + ' ' + (item.prio || '') + ' ' + (item.desc || '')).toLowerCase();
@@ -1584,60 +1749,139 @@
           colData.active.forEach(({ task: t, origIdx }) => {
             const firstUrl = extractFirstUrl(t.fullDetail || t.title);
             const formattedTitle = formatRichText(t.title, true);
-            const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+            const formattedDetail = formatDetailDisplay(t.fullDetail || t.title, t.title);
             const currentCat = colKey;
+            const isEditing = editingTaskId === t.id;
 
             const card = document.createElement('div');
             card.id = `card_${t.id}`;
-            card.className = `kanban-card p-3 rounded-xl border bg-white border-slate-200 shadow-2xs hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing select-none active:scale-[0.99] max-w-full overflow-hidden`;
-            card.setAttribute('draggable', 'true');
-            card.ondragstart = (e) => handleCardDragStart(e, t.id);
-            card.ondragend = (e) => handleCardDragEnd(e);
-            card.onclick = () => {
-              if (isDraggingCard) return;
-              toggleTaskDetail(t.id);
-            };
-            card.innerHTML = `
-              <div class="flex items-start justify-between space-x-2">
-                <div class="flex items-center space-x-1.5 pt-0.5 select-none shrink-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-600 transition-colors" title="Chytit a přetáhnout do jiného sloupce">
-                  <span class="text-xs leading-none font-mono">⠿</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
-                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${t.badgeClass}">${t.tag}</span>
-                    ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
-                  </div>
-                  <h4 class="text-xs font-bold text-slate-900 leading-snug break-words break-all [overflow-wrap:anywhere]">${formattedTitle}</h4>
-                  ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-1">${t.subtitle}</p>` : ''}
-                  ${firstUrl ? `
-                    <div class="mt-2 flex items-center space-x-1.5" onclick="event.stopPropagation()">
-                      <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all">
-                        <span>🌐</span>
-                        <span>Otevřít odkaz</span>
-                        <svg class="w-3 h-3 inline ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                      </a>
-                    </div>
-                  ` : ''}
-                </div>
-                <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
-              </div>
 
-              <div id="detail_${t.id}" class="hidden mt-2.5 pt-2 border-t border-slate-100 text-xs text-slate-700 space-y-2 max-w-full overflow-hidden">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">📋 Detail zadání:</span>
-                <div class="text-[11px] text-slate-700 bg-slate-50/90 p-2 rounded-lg border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
-                
-                <!-- Rychlé přetažení / přeřazení jedním klikem (pro mobil i desktop) -->
-                <div class="pt-1.5 flex items-center justify-between flex-wrap gap-1.5" onclick="event.stopPropagation()">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Přesunout:</span>
-                  <div class="flex items-center space-x-1 flex-wrap gap-1">
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'baluo')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'baluo' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'} active:scale-95 transition-all">🔴 Baluo</button>
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'startitup')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'startitup' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'} active:scale-95 transition-all">🚀 StartItUp</button>
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'personal')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'personal' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'} active:scale-95 transition-all">🟢 Osobní</button>
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'inbox')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'inbox' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200'} active:scale-95 transition-all">📥 Inbox</button>
+            if (isEditing) {
+              card.className = `p-3.5 rounded-xl border bg-white border-indigo-500 shadow-md ring-2 ring-indigo-500/20 max-w-full overflow-hidden transition-all`;
+              card.onclick = (e) => e.stopPropagation();
+
+              const cleanDetailForEdit = (t.fullDetail || '')
+                .replace(/<!--[\s\S]*?-->/g, '')
+                .replace(/^🎙️ Původní hlasovka:\s*/i, '')
+                .replace(/^\*\*\[.*?\]\:\*\*\s*/, '')
+                .replace(/^\[.*?\]\:\s*/, '')
+                .trim();
+
+              card.innerHTML = `
+                <div class="space-y-2.5 text-xs select-text" onclick="event.stopPropagation()">
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-[11px] font-bold text-indigo-900 flex items-center space-x-1.5">
+                      <span>✏️</span>
+                      <span>Upravit úkol (Klára)</span>
+                    </span>
+                    <button onclick="event.stopPropagation(); cancelEditCard('${t.id}')" class="text-slate-400 hover:text-slate-700 text-xs px-1.5 py-0.5 rounded font-bold">✕ Zavřít</button>
+                  </div>
+
+                  <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Název úkolu:</label>
+                    <input id="editTitle_${t.id}" type="text" value="${escapeHtml(t.title)}" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-bold text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner">
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Termín / Čas:</label>
+                      <input id="editTime_${t.id}" type="text" value="${escapeHtml(t.time || '')}" placeholder="Dnes dopoledne" class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner">
+                    </div>
+                    <div>
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Svět / Sloupec:</label>
+                      <select id="editCat_${t.id}" class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="baluo" ${currentCat === 'baluo' ? 'selected' : ''}>🔴 Baluo & FTK</option>
+                        <option value="startitup" ${currentCat === 'startitup' ? 'selected' : ''}>🚀 StartItUp</option>
+                        <option value="personal" ${currentCat === 'personal' ? 'selected' : ''}>🟢 Osobní & Sport</option>
+                        <option value="inbox" ${currentCat === 'inbox' ? 'selected' : ''}>📥 Inbox</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Podrobnosti / Poznámka:</label>
+                    <textarea id="editDetail_${t.id}" rows="3" placeholder="Doplňující kontext, odkazy nebo poznámky..." class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 text-xs leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner">${escapeHtml(cleanDetailForEdit)}</textarea>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
+                    <button onclick="event.stopPropagation(); deleteCardTask('${t.id}')" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-[11px] font-bold border border-rose-200 active:scale-95 transition-all flex items-center space-x-1" title="Úplně smazat tento úkol">
+                      <span>🗑️</span>
+                      <span>Smazat</span>
+                    </button>
+                    <div class="flex items-center space-x-1.5">
+                      <button onclick="event.stopPropagation(); cancelEditCard('${t.id}')" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100 rounded-lg text-[11px] font-semibold active:scale-95 transition-all">
+                        Zrušit
+                      </button>
+                      <button onclick="event.stopPropagation(); saveEditCard('${t.id}')" class="px-3.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-bold shadow-xs active:scale-95 transition-all flex items-center space-x-1">
+                        <span>💾</span>
+                        <span>Uložit</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            `;
+              `;
+            } else {
+              card.className = `kanban-card p-3 rounded-xl border bg-white border-slate-200 shadow-2xs hover:border-slate-300 transition-all cursor-grab active:cursor-grabbing select-none active:scale-[0.99] max-w-full overflow-hidden`;
+              card.setAttribute('draggable', 'true');
+              card.ondragstart = (e) => handleCardDragStart(e, t.id);
+              card.ondragend = (e) => handleCardDragEnd(e);
+              card.onclick = () => {
+                if (isDraggingCard) return;
+                toggleTaskDetail(t.id);
+              };
+              card.innerHTML = `
+                <div class="flex items-start justify-between space-x-2">
+                  <div class="flex items-center space-x-1.5 pt-0.5 select-none shrink-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-600 transition-colors" title="Chytit a přetáhnout do jiného sloupce">
+                    <span class="text-xs leading-none font-mono">⠿</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                      <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${t.badgeClass}">${t.tag}</span>
+                      ${t.time ? `<span class="text-[10px] font-mono text-slate-500 font-bold">${t.time}</span>` : ''}
+                    </div>
+                    <h4 class="text-xs font-bold text-slate-900 leading-snug break-words break-all [overflow-wrap:anywhere]">${formattedTitle}</h4>
+                    ${t.subtitle ? `<p class="text-[11px] text-slate-500 mt-0.5 break-words line-clamp-1">${t.subtitle}</p>` : ''}
+                    ${firstUrl ? `
+                      <div class="mt-2 flex items-center space-x-1.5" onclick="event.stopPropagation()">
+                        <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-lg shadow-2xs active:scale-95 transition-all">
+                          <span>🌐</span>
+                          <span>Otevřít odkaz</span>
+                          <svg class="w-3 h-3 inline ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        </a>
+                      </div>
+                    ` : ''}
+                  </div>
+                  <div class="flex items-center space-x-1 shrink-0 mt-0.5">
+                    <button onclick="event.stopPropagation(); openEditCard('${t.id}')" class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-colors" title="Upravit text úkolu">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                  </div>
+                </div>
+
+                <div id="detail_${t.id}" class="hidden mt-2.5 pt-2 border-t border-slate-100 text-xs text-slate-700 space-y-2 max-w-full overflow-hidden">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">📋 Detail zadání:</span>
+                    <button onclick="event.stopPropagation(); openEditCard('${t.id}')" class="inline-flex items-center space-x-1 px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded border border-indigo-200 active:scale-95 transition-all">
+                      <span>✏️</span>
+                      <span>Upravit text</span>
+                    </button>
+                  </div>
+                  <div class="text-[11px] text-slate-700 bg-slate-50/90 p-2.5 rounded-lg border border-slate-200 leading-relaxed font-normal whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
+                  
+                  <!-- Rychlé přetažení / přeřazení jedním klikem (pro mobil i desktop) -->
+                  <div class="pt-1.5 flex items-center justify-between flex-wrap gap-1.5" onclick="event.stopPropagation()">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Přesunout:</span>
+                    <div class="flex items-center space-x-1 flex-wrap gap-1">
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'baluo')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'baluo' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'} active:scale-95 transition-all">🔴 Baluo</button>
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'startitup')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'startitup' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'} active:scale-95 transition-all">🚀 StartItUp</button>
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'personal')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'personal' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'} active:scale-95 transition-all">🟢 Osobní</button>
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'inbox')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'inbox' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200'} active:scale-95 transition-all">📥 Inbox</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
             container.appendChild(card);
           });
         }
@@ -1664,42 +1908,122 @@
           colData.completed.forEach(({ task: t, origIdx }) => {
             const firstUrl = extractFirstUrl(t.fullDetail || t.title);
             const formattedTitle = formatRichText(t.title, true);
-            const formattedDetail = formatRichText(t.fullDetail || t.title, false);
+            const formattedDetail = formatDetailDisplay(t.fullDetail || t.title, t.title);
             const currentCat = colKey;
+            const isEditing = editingTaskId === t.id;
 
             const card = document.createElement('div');
             card.id = `card_${t.id}`;
-            card.className = `kanban-card p-2.5 rounded-xl border bg-slate-50/90 border-slate-200 shadow-2xs opacity-60 cursor-pointer select-none max-w-full overflow-hidden`;
-            card.onclick = () => toggleTaskDetail(t.id);
-            card.innerHTML = `
-              <div class="flex items-start justify-between space-x-2">
-                <div class="flex-1 min-w-0">
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border border-slate-300 bg-slate-200 text-slate-600">${t.tag}</span>
-                  <h4 class="text-xs font-bold text-slate-500 line-through leading-snug break-words break-all [overflow-wrap:anywhere] mt-1">${formattedTitle}</h4>
-                  ${firstUrl ? `
-                    <div class="mt-1.5 flex items-center space-x-1.5" onclick="event.stopPropagation()">
-                      <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-[10px] rounded shadow-2xs">
-                        <span>🌐</span>
-                        <span>Otevřít odkaz</span>
-                      </a>
+
+            if (isEditing) {
+              card.className = `p-3.5 rounded-xl border bg-white border-indigo-500 shadow-md ring-2 ring-indigo-500/20 max-w-full overflow-hidden transition-all`;
+              card.onclick = (e) => e.stopPropagation();
+
+              const cleanDetailForEdit = (t.fullDetail || '')
+                .replace(/<!--[\s\S]*?-->/g, '')
+                .replace(/^🎙️ Původní hlasovka:\s*/i, '')
+                .replace(/^\*\*\[.*?\]\:\*\*\s*/, '')
+                .replace(/^\[.*?\]\:\s*/, '')
+                .trim();
+
+              card.innerHTML = `
+                <div class="space-y-2.5 text-xs select-text" onclick="event.stopPropagation()">
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                    <span class="text-[11px] font-bold text-indigo-900 flex items-center space-x-1.5">
+                      <span>✏️</span>
+                      <span>Upravit úkol (Hotový)</span>
+                    </span>
+                    <button onclick="event.stopPropagation(); cancelEditCard('${t.id}')" class="text-slate-400 hover:text-slate-700 text-xs px-1.5 py-0.5 rounded font-bold">✕ Zavřít</button>
+                  </div>
+
+                  <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Název úkolu:</label>
+                    <input id="editTitle_${t.id}" type="text" value="${escapeHtml(t.title)}" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-bold text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner">
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Termín / Čas:</label>
+                      <input id="editTime_${t.id}" type="text" value="${escapeHtml(t.time || '')}" placeholder="Dnes" class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner">
                     </div>
-                  ` : ''}
-                </div>
-                <input type="checkbox" checked onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0">
-              </div>
-              <div id="detail_${t.id}" class="hidden mt-2 pt-2 border-t border-slate-200 text-xs text-slate-500 space-y-2 max-w-full overflow-hidden">
-                <div class="text-[11px] text-slate-600 bg-slate-100 p-2 rounded border border-slate-200 whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
-                <div class="pt-1 flex items-center justify-between flex-wrap gap-1.5" onclick="event.stopPropagation()">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Přesunout:</span>
-                  <div class="flex items-center space-x-1 flex-wrap gap-1">
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'baluo')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'baluo' ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🔴 Baluo</button>
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'startitup')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'startitup' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🚀 StartItUp</button>
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'personal')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'personal' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🟢 Osobní</button>
-                    <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'inbox')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'inbox' ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">📥 Inbox</button>
+                    <div>
+                      <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Svět / Sloupec:</label>
+                      <select id="editCat_${t.id}" class="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="baluo" ${currentCat === 'baluo' ? 'selected' : ''}>🔴 Baluo & FTK</option>
+                        <option value="startitup" ${currentCat === 'startitup' ? 'selected' : ''}>🚀 StartItUp</option>
+                        <option value="personal" ${currentCat === 'personal' ? 'selected' : ''}>🟢 Osobní & Sport</option>
+                        <option value="inbox" ${currentCat === 'inbox' ? 'selected' : ''}>📥 Inbox</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-0.5">Podrobnosti / Poznámka:</label>
+                    <textarea id="editDetail_${t.id}" rows="3" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 text-xs leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-inner">${escapeHtml(cleanDetailForEdit)}</textarea>
+                  </div>
+
+                  <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
+                    <button onclick="event.stopPropagation(); deleteCardTask('${t.id}')" class="px-2 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-[11px] font-bold border border-rose-200 active:scale-95 transition-all flex items-center space-x-1" title="Úplně smazat tento úkol">
+                      <span>🗑️</span>
+                      <span>Smazat</span>
+                    </button>
+                    <div class="flex items-center space-x-1.5">
+                      <button onclick="event.stopPropagation(); cancelEditCard('${t.id}')" class="px-2.5 py-1 text-slate-600 hover:bg-slate-100 rounded-lg text-[11px] font-semibold active:scale-95 transition-all">
+                        Zrušit
+                      </button>
+                      <button onclick="event.stopPropagation(); saveEditCard('${t.id}')" class="px-3.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-bold shadow-xs active:scale-95 transition-all flex items-center space-x-1">
+                        <span>💾</span>
+                        <span>Uložit</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            `;
+              `;
+            } else {
+              card.className = `kanban-card p-2.5 rounded-xl border bg-slate-50/90 border-slate-200 shadow-2xs opacity-60 cursor-pointer select-none max-w-full overflow-hidden`;
+              card.onclick = () => toggleTaskDetail(t.id);
+              card.innerHTML = `
+                <div class="flex items-start justify-between space-x-2">
+                  <div class="flex-1 min-w-0">
+                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border border-slate-300 bg-slate-200 text-slate-600">${t.tag}</span>
+                    <h4 class="text-xs font-bold text-slate-500 line-through leading-snug break-words break-all [overflow-wrap:anywhere] mt-1">${formattedTitle}</h4>
+                    ${firstUrl ? `
+                      <div class="mt-1.5 flex items-center space-x-1.5" onclick="event.stopPropagation()">
+                        <a href="${firstUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-[10px] rounded shadow-2xs">
+                          <span>🌐</span>
+                          <span>Otevřít odkaz</span>
+                        </a>
+                      </div>
+                    ` : ''}
+                  </div>
+                  <div class="flex items-center space-x-1 shrink-0 mt-0.5">
+                    <button onclick="event.stopPropagation(); openEditCard('${t.id}')" class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-colors" title="Upravit text úkolu">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <input type="checkbox" checked onclick="event.stopPropagation()" onchange="toggleTask(${origIdx}, this.checked)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                  </div>
+                </div>
+                <div id="detail_${t.id}" class="hidden mt-2 pt-2 border-t border-slate-200 text-xs text-slate-500 space-y-2 max-w-full overflow-hidden">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">📋 Detail zadání:</span>
+                    <button onclick="event.stopPropagation(); openEditCard('${t.id}')" class="inline-flex items-center space-x-1 px-2 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold rounded border border-slate-300 active:scale-95 transition-all">
+                      <span>✏️</span>
+                      <span>Upravit text</span>
+                    </button>
+                  </div>
+                  <div class="text-[11px] text-slate-600 bg-slate-100 p-2.5 rounded border border-slate-200 whitespace-pre-wrap break-words break-all [overflow-wrap:anywhere] max-w-full overflow-x-hidden">${formattedDetail}</div>
+                  <div class="pt-1 flex items-center justify-between flex-wrap gap-1.5" onclick="event.stopPropagation()">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Přesunout:</span>
+                    <div class="flex items-center space-x-1 flex-wrap gap-1">
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'baluo')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'baluo' ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🔴 Baluo</button>
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'startitup')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'startitup' ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🚀 StartItUp</button>
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'personal')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'personal' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">🟢 Osobní</button>
+                      <button onclick="event.stopPropagation(); moveTaskToWorld('${t.id}', 'inbox')" class="px-2 py-0.5 text-[10px] font-bold rounded ${currentCat === 'inbox' ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700'} active:scale-95 transition-all">📥 Inbox</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
             doneListEl.appendChild(card);
           });
         }
