@@ -837,7 +837,7 @@
     let allParsedTasks = [];
     let currentParsedTimeline = [];
     let currentMobileFilter = 'all';
-    const colDoneOpen = { baluo: false, startitup: false, personal: false, inbox: false };
+    const colDoneOpen = { timeline: false, baluo: false, startitup: false, personal: false, inbox: false };
 
     function toggleColDone(colKey) {
       colDoneOpen[colKey] = !colDoneOpen[colKey];
@@ -1717,33 +1717,89 @@
       const badgeTimeline = document.getElementById('badgeCol_timeline');
       if (timelineCol && timeline) {
         timelineCol.innerHTML = '';
-        let doneTimelineCount = 0;
-        timeline.forEach((item, idx) => {
-          if (item.completed) doneTimelineCount++;
-          const theme = getTimelineTheme(item);
-          const isDone = item.completed;
-          const isCurrent = item.isCurrent && !isDone;
+        const activeTimeline = [];
+        const completedTimeline = [];
 
-          const card = document.createElement('div');
-          card.className = `p-3 rounded-xl border ${theme.borderLeft} ${theme.bg} shadow-2xs transition-all relative ${isDone ? 'opacity-60' : ''}`;
-          card.innerHTML = `
-            <div class="flex items-start justify-between space-x-2">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${theme.badge}">${theme.label}</span>
-                  <span class="text-[10px] font-mono font-bold text-slate-800">${item.time}</span>
-                  ${isCurrent ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-600 text-white animate-pulse">PRÁVĚ BĚŽÍ</span>' : ''}
-                </div>
-                <h4 class="text-xs font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-900'} leading-snug break-words">${item.title}</h4>
-                ${item.desc ? `<p class="text-[11px] text-slate-600 mt-1 leading-snug break-words">${item.desc}</p>` : ''}
-                ${item.status ? `<div class="mt-1.5 flex items-center space-x-1 text-[10px] font-semibold text-slate-500"><span>Status:</span> <span class="text-slate-700">${item.status}</span></div>` : ''}
-              </div>
-              <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTimelineBlock(${idx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0" title="${isDone ? 'Znovuotevřít blok' : 'Označit blok za splněný'}">
-            </div>
-          `;
-          timelineCol.appendChild(card);
+        timeline.forEach((item, idx) => {
+          if (item.completed) {
+            completedTimeline.push({ item, idx });
+          } else {
+            activeTimeline.push({ item, idx });
+          }
         });
-        if (badgeTimeline) badgeTimeline.innerText = `${doneTimelineCount}/${timeline.length} bloků`;
+
+        // A) Aktivní bloky (čisté, žádné přeškrtnuté texty!)
+        if (activeTimeline.length === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'p-3 bg-white/70 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 italic';
+          emptyDiv.innerText = completedTimeline.length > 0 ? '✓ Všechny časové bloky dne splněny' : 'Žádné časové bloky';
+          timelineCol.appendChild(emptyDiv);
+        } else {
+          activeTimeline.forEach(({ item, idx }) => {
+            const theme = getTimelineTheme(item);
+            const isCurrent = item.isCurrent;
+
+            const card = document.createElement('div');
+            card.className = `p-3 rounded-xl border ${theme.borderLeft} ${theme.bg} shadow-2xs transition-all relative`;
+            card.innerHTML = `
+              <div class="flex items-start justify-between space-x-2">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${theme.badge}">${theme.label}</span>
+                    <span class="text-[10px] font-mono font-bold text-slate-800">${item.time}</span>
+                    ${isCurrent ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-rose-600 text-white animate-pulse">PRÁVĚ BĚŽÍ</span>' : ''}
+                  </div>
+                  <h4 class="text-xs font-bold text-slate-900 leading-snug break-words">${item.title}</h4>
+                  ${item.desc ? `<p class="text-[11px] text-slate-600 mt-1 leading-snug break-words">${item.desc}</p>` : ''}
+                  ${item.status ? `<div class="mt-1.5 flex items-center space-x-1 text-[10px] font-semibold text-slate-500"><span>Status:</span> <span class="text-slate-700">${item.status}</span></div>` : ''}
+                </div>
+                <input type="checkbox" onchange="toggleTimelineBlock(${idx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0" title="Označit blok za splněný">
+              </div>
+            `;
+            timelineCol.appendChild(card);
+          });
+        }
+
+        // B) Sbalovací akordeon pro splněné bloky streamu (standardně sbaleno)
+        if (completedTimeline.length > 0) {
+          const isOpen = colDoneOpen.timeline;
+          const doneWrapper = document.createElement('div');
+          doneWrapper.className = 'pt-1';
+          doneWrapper.innerHTML = `
+            <button onclick="toggleColDone('timeline')" class="w-full flex items-center justify-between p-2 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 transition-all active:scale-98">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span>Hotovo ve streamu</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">${completedTimeline.length}</span>
+              </div>
+              <span id="colDoneArrow_timeline" class="text-slate-500 font-bold">${isOpen ? '▴' : '▾'}</span>
+            </button>
+            <div id="colDoneList_timeline" class="${isOpen ? '' : 'hidden'} mt-2 space-y-2"></div>
+          `;
+          timelineCol.appendChild(doneWrapper);
+
+          const doneListEl = doneWrapper.querySelector('#colDoneList_timeline');
+          completedTimeline.forEach(({ item, idx }) => {
+            const theme = getTimelineTheme(item);
+            const card = document.createElement('div');
+            card.className = `p-3 rounded-xl border border-slate-200 bg-slate-50/70 shadow-2xs transition-all relative opacity-70`;
+            card.innerHTML = `
+              <div class="flex items-start justify-between space-x-2">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center space-x-1.5 mb-1 flex-wrap gap-y-1">
+                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${theme.badge}">${theme.label}</span>
+                    <span class="text-[10px] font-mono font-bold text-slate-500">${item.time}</span>
+                  </div>
+                  <h4 class="text-xs font-bold text-slate-500 line-through leading-snug break-words">${item.title}</h4>
+                </div>
+                <input type="checkbox" checked onchange="toggleTimelineBlock(${idx}, this.checked)" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer shrink-0" title="Znovuotevřít blok">
+              </div>
+            `;
+            doneListEl.appendChild(card);
+          });
+        }
+
+        if (badgeTimeline) badgeTimeline.innerText = `${completedTimeline.length}/${timeline.length} bloků`;
       }
 
       // 2. ROZDĚLENÍ ÚKOLŮ DO 4 SVĚTŮ
