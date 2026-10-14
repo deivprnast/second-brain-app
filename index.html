@@ -144,22 +144,28 @@
 
       <!-- TAB 1: MISE & ČASOVÁ OSA -->
       <div id="tabContentMission" class="space-y-5">
+
+        <!-- 🔥 DNEŠNÍ SKÓRE VÍTĚZSTVÍ & MOMENTUM BAR (SECOND BRAIN 2.0) -->
+        <div id="sb2VictoryContainer"></div>
+
+        <!-- 🧠 SUPER-KOUČ KLÁRA • O KROK NAPŘED (ANTICIPATION ENGINE & 60S BRIEFING) -->
+        <div id="sb2CoachContainer"></div>
         
         <!-- 🎙️ RYCHLÝ ZÁCHYT MYŠLENKY / HLASOVKA (PŘÍMO NA HLAVNÍ STRÁNCE) -->
         <div class="p-3.5 bg-gradient-to-r from-indigo-50/90 via-slate-50 to-indigo-50/70 border border-indigo-200/90 rounded-2xl shadow-xs space-y-2.5">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-1">
             <div class="flex items-center space-x-1.5">
               <span class="text-base">🎙️</span>
               <div>
                 <span class="text-xs font-bold text-indigo-950 uppercase tracking-wide">Klára • Rychlý záchyt & Hlasovka</span>
-                <span class="text-[10px] text-indigo-600 block font-normal">Klára sama rozezná Baluo, StartItUp i Osobní a zařadí do sloupce</span>
+                <span class="text-[10px] text-emerald-700 block font-semibold">✨ Slovník PEOPLE.md aktivní (Suchomel, Junek, Ayala, Háp...)</span>
               </div>
             </div>
             <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Cloud Sync 24/7</span>
           </div>
 
           <div class="flex space-x-2">
-            <input id="quickCaptureInput" type="text" placeholder="Mluv nebo piš (např. Vypsat cesťák Karlovi do Chorvatska...)" class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
+            <input id="quickCaptureInput" type="text" placeholder="Mluv nebo piš (např. Poslat e-mail Ayalovi a zavolat Zbyňovi...)" class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs">
             <button onclick="submitQuickCaptureHome('auto')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs shrink-0 flex items-center space-x-1" title="Klára automaticky rozezná svět a zařadí úkol do správného sloupce">
               <span>Zařadit</span>
             </button>
@@ -257,8 +263,8 @@
           </div>
         </div>
 
-        <!-- HLAVIČKA NÁSTĚNKY S CELKOVÝM SKÓRE DNE -->
-        <div class="flex items-center justify-between pt-1">
+        <!-- HLAVIČKA NÁSTĚNKY S CELKOVÝM SKÓRE DNE A PŘEPÍNAČEM FOKUS 3 KARET -->
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
           <div>
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center space-x-1.5">
               <span>📋</span>
@@ -266,11 +272,20 @@
             </h2>
             <p class="text-[11px] text-slate-500">5 světů: Časový stream, Baluo, StartItUp, Osobní & Inbox</p>
           </div>
-          <span id="completedCounter" class="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">0/0 splněno</span>
+          <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+            <button id="headerFocus3Btn" onclick="window.toggleFocus3Mode()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 active:scale-95 transition-all cursor-pointer flex items-center space-x-1.5">
+              <span>🎯</span>
+              <span>Zapnout Režim Fokus: Jen 3 Karty</span>
+            </button>
+            <span id="completedCounter" class="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">0/0 splněno</span>
+          </div>
         </div>
 
+        <!-- 🎯 REŽIM FOKUS DNE: JEN 3 KARTY (Skryje 30+ položek a ukáže jen Top 3) -->
+        <div id="sb2Focus3Container" class="hidden"></div>
+
         <!-- Mobilní Segmented Pill Filter pro rychlé přepínání sloupců na telefonu -->
-        <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1 lg:hidden">
+        <div id="kanbanMobileFilterRow" class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1 lg:hidden">
           <button onclick="setKanbanMobileFilter('all')" id="kmf_all" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-2xs whitespace-nowrap active:scale-95 transition-all">📋 Všechny sloupce</button>
           <button onclick="setKanbanMobileFilter('timeline')" id="kmf_timeline" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">⏱️ Stream dne</button>
           <button onclick="setKanbanMobileFilter('baluo')" id="kmf_baluo" class="kmf-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 whitespace-nowrap active:scale-95 transition-all">🔴 Baluo & FTK</button>
@@ -590,6 +605,9 @@
 
   </div>
 
+  <!-- 🧠 SECOND BRAIN 2.0: SUPER-KOUČ, ANTICIPACE, FOKUS 3 & VOICE AI ENGINE -->
+  <script src="coach-engine.js?v=2.0"></script>
+
   <script>
     const AUTH_PIN = "1988";
     const GITHUB_REPO = "deivprnast/david-second-brain";
@@ -605,7 +623,7 @@
     let activeDictationTarget = 'inbox'; // 'inbox', 'home' nebo 'chat'
     let finalSessionTranscript = '';
 
-    // Inteligentní filtr pro odstranění zdvojených frází z mobilního mikrofonu
+    // Inteligentní filtr pro odstranění zdvojených frází z mobilního mikrofonu + korekce jmen z PEOPLE.md
     function cleanDuplicatePhrases(text) {
       if (!text) return "";
       let words = text.replace(/\s+/g, " ").trim().split(" ");
@@ -627,7 +645,8 @@
           out.push(words[i]);
         }
       }
-      return out.join(" ");
+      const deduped = out.join(" ");
+      return window.applySmartPeopleDictionary ? window.applySmartPeopleDictionary(deduped) : deduped;
     }
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -729,10 +748,22 @@
               }
             } catch(e){}
           }
-          
+
+          // Multimodální přepis přes Gemini Audio API se slovníkem PEOPLE.md
+          showKlaraToast('🎙️ Gemini přepisuje tvou audio hlasovku (PEOPLE.md)...', '⏳');
+          let transcribedText = null;
+          if (window.transcribeAudioBlobWithGemini) {
+            transcribedText = await window.transcribeAudioBlobWithGemini(audioBlob, mimeType);
+          }
+
           const nowStr = new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-          await submitThoughtDirect(`🎙️ Audio hlasovka nahrána v ${nowStr}`);
-          alert("✅ Hlasovka zaznamenána do priorit.");
+          if (transcribedText) {
+            await submitThoughtDirect(transcribedText, true, 'auto');
+            showKlaraToast(`✅ Přepsáno a zařazeno: "${transcribedText.slice(0, 45)}..."`, '🎙️');
+          } else {
+            await submitThoughtDirect(`🎙️ Audio hlasovka nahrána v ${nowStr}`, true, 'auto');
+            alert("✅ Hlasovka zaznamenána do priorit.");
+          }
         };
 
         mediaRecorder.start();
@@ -1237,9 +1268,9 @@
       }
 
       const radar = [
-        { day: "Středa 13:30", title: "👑 Summit: Děkan Háp + Tajoš Král + Suchomel (VTP)", desc: "Jednotná diagnostika AC FTK (1. 1. 2027), finance a smluvní výzkum!", highlight: true },
-        { day: "Úterý 12:00", title: "Odeslání e-mailu Hůlkovi", desc: "Dořešení IGA se Zdeňkem Dygrýnem.", highlight: false },
-        { day: "Čtvrtek 09:00", title: "Exekutiva: Kuba Havlín & Děkan", desc: "Smluvní výzkum a transfer technologií.", highlight: false }
+        { day: "Čtvrtek 15. 10. • 10:00", title: "🏛️ Active Campus Marketing (Trojský kůň)", desc: "Ukázat živý prototyp (Active Lab / Space / Living) + doménu activecampus.cz.", highlight: true },
+        { day: "Čtvrtek 15. 10. • Fakulta", title: "⚠️ Situace ředitel Sigmund (Odchod / kamery)", desc: "Děkan řeší jeho odchod. Držet se 100% mimo kuloární politiku, fokus na výsledky.", highlight: false },
+        { day: "Pátek 16. – Sobota 17. 10.", title: "🚀 Byznys Výjezdko StartItUp", desc: "Strategický sjezd se Zbyňou, Vondzíkem a Bauerem – cesta k finanční nezávislosti.", highlight: true }
       ];
 
       return {
@@ -2279,6 +2310,11 @@
           });
         }
       });
+
+      // Vykreslit Second Brain 2.0 widgety (Skóre Vítězství, Super-Kouč & Režim Fokus 3)
+      if (window.renderSecondBrain2Widgets) {
+        window.renderSecondBrain2Widgets(tasks, timeline, currentRawMarkdown);
+      }
     }
 
     async function toggleTimelineBlock(timelineIdx, isChecked) {
@@ -2315,6 +2351,9 @@
       });
 
       renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+      if (isChecked) {
+        showKlaraToast(`🔥 Skóre Vítězství +1: Blok "${(item.title || '').slice(0, 28)}" splněn!`, '🏆');
+      }
 
       await saveMarkdownToCloud(
         currentRawMarkdown,
@@ -2370,8 +2409,12 @@
         });
       }
 
-      // 2. Blesková aktualizace UI bez čekání
+      // 2. Blesková aktualizace UI + Dopaminová pochvala
       renderKanbanBoard(allParsedTasks, currentParsedTimeline);
+      if (isChecked) {
+        const doneNow = allParsedTasks.filter(t => t.completed).length;
+        showKlaraToast(`🔥 Skóre Vítězství (${doneNow} hotovo): Skvělá práce, zářez odškrtnut!`, '🏆');
+      }
 
       // 3. Trvalé uložení do Cloudu na GitHub
       const titleSummary = (task.title || "").slice(0, 30);
@@ -2576,28 +2619,32 @@
       const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) return null;
 
-      const workingModel = localStorage.getItem('gemini_working_model') || 'gemini-3.8-flash';
-      const modelsToTry = [workingModel, 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const cleanedRawText = window.applySmartPeopleDictionary ? window.applySmartPeopleDictionary(rawText) : rawText;
+      const workingModel = localStorage.getItem('gemini_working_model') || 'gemini-2.5-flash';
+      const modelsToTry = [...new Set([workingModel, 'gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'])];
+      const nowStr = new Date().toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' });
 
-      const prompt = `Jsi špičková osobní AI asistentka Klára (Chief of Staff) pro Davida Prycla (BDM AC Baluo FTK UP, Transfer Scout, Co-founder StartItUp.io).
-David ti v běhu z mobilu nadiktoval tento hlasový záznam:
-"${rawText}"
+      const prompt = `Jsi špičková osobní AI asistentka a Super-Kouč Klára (Chief of Staff) pro Davida Prycla (BDM AC Baluo FTK UP, Transfer Scout, Co-founder StartItUp.cz).
+David ti nadiktoval tento hlasový záznam:
+"${cleanedRawText}"
 
-Dnešek je: Úterý 6. 10. 2026.
+Dnešek je: ${nowStr}.
 Aktuální čas: ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}.
 
+${window.PEOPLE_CONTEXT_PROMPT || ''}
+
 Davidovy 4 světy a klíčová témata:
-1. BALUO (AC Baluo & FTK UP): Univerzita Palackého, Děkan Jan Háp, Tajoš Král, VTP Suchomel, Karel Hůlka, Sigmund, Botek, FAČR, cestovní příkazy (cesťáky na 14 dní do Chorvatska), klinické studie (ClinicalTrials.gov), klientská diagnostika, fotbal, IGA, transfer technologií.
-2. STARTITUP (StartItUp & Zisk): Tvorba VIP webů pro klienty, automatická VIP továrna, Zbyňa, CRM, konverze, byznys, monetizace, fakturace.
-3. OSOBNÍ (Osobní, Sport & Rodina): Sport, fitness v Baluo s Pájou Mrnuštíkem, manželka Janča (Jana Pryclová), svišti, rodina, Spálov, regenerace, zdraví.
+1. BALUO (AC Baluo & FTK UP): Univerzita Palackého, Děkan Pavel Háp, Tajemník Radek Král, VTP Tomáš Suchomel, Karel Hůlka, Martin Sigmund, doc. Rudolf Psotta, Michal Botek, Jirka Veverka, Active Campus (Active Lab, Active Space, Active Living), klinické studie, CPET diagnostika, IGA, transfer technologií.
+2. STARTITUP (StartItUp & Zisk): Tvorba VIP webů (Ayala, Lékárna, Žižkov), automatická VIP továrna, Zbyněk (Zbyňa), Vondzík, Bauer, Robert, CRM, konverze, byznys, monetizace, nezávislost na univerzitě.
+3. OSOBNÍ (Osobní, Sport & Rodina): Sport, fitness v Baluo s Pavlem Mrnuštíkem, manželka Janča (Jana Pryclová), dcery Andrejka a Terezka, Svišti v pohybu, Spálov, regenerace, zdraví.
 4. INBOX: Obecné nespecifikované poznámky, které David rozřadí později.
 
 Tvůj úkol jako asistentka Klára:
-1. Vytáhni čistý a výstižný název úkolu (cleanTitle, max 6-8 slov, např. 'Vypsat cesťák Karlovi Hůlkovi do Chorvatska').
-2. Zařaď jej do konkrétního časového slotu podle dne (timeSlot, např. 'Dnes 11:00' nebo 'Dnes dopoledne' nebo 'Dnes 16:30').
+1. Vytáhni čistý a výstižný název úkolu se 100% opravenými jmény osob (cleanTitle, max 6-10 slov, např. 'Poslat zprávu Zbyňovi ohledně rozesílky StartItUp').
+2. Zařaď jej do konkrétního časového slotu podle dne (timeSlot, např. 'Dnes dopoledne' nebo 'Čtvrtek 10:00').
 3. Urči kategorii PŘESNĚ podle světů (category: BALUO | STARTITUP | OSOBNÍ | INBOX).
 4. Urči prioritu (priority: P0 | P1 | P2 | P3).
-5. Zachovej detailní kontext a přidej stručné doporučení dalšího kroku (details).
+5. Zachovej detailní kontext a přidej stručné koučovací doporučení dalšího kroku (details).
 
 Vrať POUZE validní JSON bez markdown značek:
 {
@@ -3206,24 +3253,29 @@ Vrať POUZE validní JSON bez markdown značek:
       chatBox.appendChild(loadingMsg);
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Sestavení kontextu a system instruction
-      const systemInstruction = `Jsi Chief of Staff, strategický poradce a nekompromisní osobní kouč Davida Prycla.
-Tvým úkolem je hlídat jeho čas, priority, bránit rozptylování a pomáhat mu dosahovat špičkových výsledků ("Být lepší!").
+      // Sestavení kontextu a system instruction (Second Brain 2.0 Super-Kouč)
+      const systemInstruction = `Jsi Klára – Chief of Staff, strategický poradce a osobní AI Super-Kouč Davida Prycla.
+Tvým úkolem je být o krok před Davidem, chránit jeho fokus, uzavírat jeho otevřené smyčky (95 % -> 100 %) a poskytovat mu jak dopaminové ocenění za hotové věci, tak pevný koučovací rámec ("Být lepší!").
 
-O DAVIDOVI:
-- David Prycl: BDM v Aplikačním centru Baluo (FTK UP), Transfer Scout (FTK UP), Ph.D. student kinantropologie, spoluzakladatel StartItUp (B2B SaaS / AI nástroje), zakladatel Svišti v pohybu.
-- Styl: Extrémní tah na branku, vizionář, spousta rozpracovaných věcí současně. Nesnáší korporátní balast a prázdné řeči. Potřebuje jasné priority, vnější tlak, přímočaré zhodnocení a konkrétní kroky ("Být lepší!").
+PSYCHOLOGICKÝ PROFIL DAVIDA (BRAIN/PSYCHOLOGICKY_PROFIL.md):
+- Archetyp: Polyhistor-Stavitel & „Pákový architekt“ (Strategický diplomat na FTK UP + AI Builder ve StartItUp + Vědec Ph.D. + Táta od rodiny).
+- Silné stránky: Extrémní rychlost exekuce (Figma -> živý web za pár hodin), politická empatie (nejdřív nechá tým vykecat, pak vytáhne hotový prototyp), schopnost propojovat 4 světy.
+- Slepá místa, která aktivně hlídáš:
+  1. Syndrom „Posledních 5 %“ (otevřené smyčky): David bleskově postaví 95 % projektu, ale finální odeslání e-mailu / fakturaci odkládá. Tvůj lék: Nejdřív „Sněz žábu“ (15 min uzavření smyčky), teprve za odměnu 90 min vibecodingu.
+  2. Kreativní prokrastinace stavěním: Když je úkol politicky nepříjemný nebo nudný, David uteče k programování nového nástroje. Jemně ho zastav a vrať k prioritě.
+  3. Syndrom „Nikdy nedělám dost“: David nevidí, kolik toho už odškrtl, a přepaluje se po 22:00. Vždy nejprve pojmenuj a pochval jeho dnešní odškrtnutá vítězství!
+  4. Kontextová daň (4 světy naráz): Drž ho v režimu „Fokus 3“ – v jednu chvíli max 3 hlavní karty dne.
+
+${window.PEOPLE_CONTEXT_PROMPT || ''}
 
 AKTUÁLNÍ STAV DRUHÉHO MOZKU A DNEŠNÍ ROZVRH (SSOT):
 ${currentRawMarkdown || "Prioritní soubor načten z GitHubu/lokálního disku."}
 
 PRAVIDLA TVÉ KOMUNIKACE:
-1. Mluv česky, přímo k věci, energicky, bez omáčky a klišé.
-2. Když se David ptá na rozvrh nebo priority, vycházej VŽDY z jeho aktuálního plánu výše.
-3. Pokud David prokrastinuje nebo se nechal zdržet hovorem, pomož mu okamžitě zreorganizovat zbývající čas a prioritizovat to nejdůležitější (P0).
-4. Pokud David chce něco zaznamenat nebo naplánovat, odpověz konkrétně a navrhni přesné znění.
-5. Formátuj odpovědi přehledně (používej tučné písmo pro klíčové termíny, krátké odrážky).
-6. Tvá role není pasivně přitakávat, ale vést, směrovat a motivovat Davida k excelenci.`;
+1. Mluv česky, lidsky, energicky, s respektem parťáka a kouče, bez korporátní vaty.
+2. Buď O KROK NAPŘED: Upozorňuj Davida na nadcházející milníky (např. čtvrteční schůzka 10:00 Active Campus s Jirkou Veverkou a PR holkami, čtvrteční politické dění kolem ředitele Sigmunda a děkana Hápa, páteční/sobotní výjezdko StartItUp se Zbyňou, Vondzíkem a Bauerem).
+3. Vždy začni krátkým uznáním toho, co už dnes dokázal, a pak mu dej JEDEN konkrétní další mikro-krok na 5–15 minut.
+4. Formátuj odpovědi přehledně (tučné písmo pro klíčové termíny, krátké odrážky).`;
 
       // Přidat do historie chatu
       chatHistory.push({
@@ -3234,9 +3286,9 @@ PRAVIDLA TVÉ KOMUNIKACE:
         chatHistory = chatHistory.slice(-16);
       }
 
-      // Modely k vyzkoušení s fallbackem (Gemini 3.8 Flash je primární)
-      const preferredModel = localStorage.getItem('gemini_working_model') || "gemini-3.8-flash";
-      const modelsToTry = [...new Set([preferredModel, "gemini-3.8-flash", "gemini-2.5-flash", "gemini-1.5-flash"])];
+      // Modely k vyzkoušení s fallbackem
+      const preferredModel = localStorage.getItem('gemini_working_model') || "gemini-2.5-flash";
+      const modelsToTry = [...new Set([preferredModel, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"])];
 
       let success = false;
       let replyText = "";
