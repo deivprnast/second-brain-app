@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔒 Soukromá Myšlenková Mapa | Zero-Knowledge Vault</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8fafc; color: #0f172a; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 bg-slate-100">
+
+  <div id="vaultCard" class="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200 text-center space-y-5">
+    <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto text-3xl shadow-2xs">
+      🔒
+    </div>
+    <div class="space-y-1.5">
+      <span class="px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-indigo-100 text-indigo-800 rounded-full border border-indigo-200">Zero-Knowledge Vault</span>
+      <h1 id="vaultTitle" class="text-xl font-black text-slate-900 tracking-tight">Ověřuji soukromý klíč...</h1>
+      <p id="vaultDesc" class="text-xs text-slate-500 leading-relaxed">
+        Tato stránka neobsahuje žádná veřejná data. Obsah se dešifruje a stahuje ze soukromého úložiště až po ověření vašeho GitHub Tokenu.
+      </p>
+    </div>
+
+    <div id="tokenForm" class="hidden space-y-3 pt-2 text-left">
+      <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-600">Autorizační GitHub Token:</label>
+      <input id="tokenInput" type="password" placeholder="ghp_... nebo gho_..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <button onclick="unlockVaultWithInput()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer">
+        🔓 Odemknout soukromou mapu
+      </button>
+    </div>
+
+    <div class="pt-2 border-t border-slate-100 flex justify-center">
+      <a href="./index.html" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all">
+        ← Zpět do hlavního Kokpitu
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const GITHUB_REPO = "deivprnast/david-second-brain";
+    const PRIVATE_PATH = "BRAIN/MAPA_ZIVOTA_DAVID_PRYCL.html";
+
+    async function loadPrivateMap(token) {
+      const titleEl = document.getElementById('vaultTitle');
+      const descEl = document.getElementById('vaultDesc');
+      const formEl = document.getElementById('tokenForm');
+
+      if (!token) {
+        titleEl.innerText = "Přístup zamčen";
+        descEl.innerText = "Pro zobrazení soukromé Myšlenkové mapy zadejte svůj autorizační GitHub Token (nebo se přihlaste v hlavním Kokpitu).";
+        formEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        titleEl.innerText = "Stahuji šifrovaná data...";
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${PRIVATE_PATH}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("Neplatný nebo expirovaný token (HTTP " + res.status + ")");
+        }
+
+        const fileData = await res.json();
+        const decodedHtml = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+
+        document.open();
+        document.write(decodedHtml);
+        document.close();
+      } catch (err) {
+        titleEl.innerText = "Přístup odepřen";
+        descEl.innerText = "Nepodařilo se ověřit GitHub Token: " + err.message;
+        formEl.classList.remove('hidden');
+      }
+    }
+
+    function unlockVaultWithInput() {
+      const val = (document.getElementById('tokenInput').value || '').trim();
+      if (val.length > 10) {
+        localStorage.setItem('github_token', val);
+        loadPrivateMap(val);
+      }
+    }
+
+    // Automatické odemčení, pokud má David uložený token v prohlížeči
+    const savedToken = localStorage.getItem('github_token') || '';
+    loadPrivateMap(savedToken);
+  </script>
+</body>
+</html>
